@@ -32,13 +32,14 @@ Turn a vague idea or an incoming signal into a committed `intent.md` using the r
    - Monday: `get_items`
    - Datadog: `query_metrics` (for alerts)
 3. Ask the originator the five questions: what is the problem, who is affected, what does better look like, what constraints apply, and what is out of scope.
-4. Draft `intent.md` using `templates/intent.md`.
-5. Surface any contradictions or missing constraints.
-6. Propose a source link and a record ID (e.g. `intent/JIRA-4822.md`).
-7. Stage the file; do not commit without human approval.
+4. For a GitHub-centric team, create a branch `intent/<id>` and the folder `intents/<id>/`.
+5. Draft `intents/<id>/01-intent.md` using `templates/intent.md`.
+6. Surface any contradictions or missing constraints.
+7. Propose a source link and a record ID (e.g. `intents/csv-export-20260826/01-intent.md`).
+8. Stage the file; open a draft PR if the team uses GitHub; do not merge without human approval.
 
 ## Output
 
-- `intent.md` with a clear problem, proposed outcome, affected users/systems, constraints, and open questions.
+- `intents/<id>/01-intent.md` with a clear problem, proposed outcome, affected users/systems, constraints, and open questions.
 - A link back to the source ticket, thread, or alert.
-- A recommendation on whether the item is ready for design.
+- A branch `intent/<id>` and a draft PR for the team to review.

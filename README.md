@@ -19,7 +19,8 @@ It ships as a package: **skills**, **artifact templates**, **MCP client configs*
 7. [Governance hooks](#governance-hooks)
 8. [The `ai-dlc` CLI](#the-ai-dlc-cli)
 9. [Repository layout](#repository-layout)
-10. [Contributing](#contributing)
+10. [GitHub-centric fully immersed AI team](#github-centric-fully-immersed-ai-team)
+11. [Contributing](#contributing)
 
 ## The idea in one loop
 
@@ -154,6 +155,51 @@ See the full example in `examples/startup-feature.md`.
 See the full example in `examples/enterprise-change.md`.
 
 For the full persona guide, read `references/team-flows.md`.
+
+## GitHub-centric fully immersed AI team
+
+For a startup that wants GitHub to be the single source of truth, the repo itself becomes the backlog and the agent memory.
+
+### Layout
+
+```
+.
+├── .claude/skills/          # skills from this package
+├── .claude/hooks/           # governance hooks
+├── CLAUDE.md                # agent memory
+├── AGENTS.md
+├── intents/                 # the backlog
+│   ├── csv-export-20260826/
+│   │   ├── 01-intent.md
+│   │   ├── 02-spec.md
+│   │   ├── 03-plan.md
+│   │   ├── 04-review.md
+│   │   ├── 05-deploy.md
+│   │   └── 06-lessons.md
+│   └── payment-audit-20260827/
+│       └── 01-intent.md
+└── src/
+```
+
+### One branch per intent
+
+```
+main
+  └── intent/csv-export-20260826
+```
+
+A single branch per intent keeps the startup lean. The branch accumulates the numbered artifacts in `intents/<id>/` plus the code. One PR is opened and a human merges it when the full chain is accepted.
+
+### Flow
+
+1. **PM** runs `01-intent-capture`. The agent creates branch `intent/csv-export-20260826`, writes `intents/csv-export-20260826/01-intent.md`, and opens a draft PR.
+2. **PM/Designer** runs `02-spec-writer`. The agent writes `02-spec.md` in the same folder.
+3. **Engineer** runs `03-plan-mode`. The agent writes `03-plan.md` and then implements the code.
+4. **Agent** runs `04-feedback-loop`, then `05-pr-review` writes `04-review.md`.
+5. **Tech lead** reviews and merges to `main`.
+6. **SRE** runs `06-closing-the-loop` after deploy. Any finding writes a new `intents/<id>/01-intent.md` and starts the loop again.
+
+See the full guide in `examples/github-centric-team.md` and sample intent folders in `examples/intents/`.
 
 ## Governance hooks
 

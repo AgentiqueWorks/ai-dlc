@@ -23,10 +23,10 @@ Read an accepted `intent.md` and produce a requirements and design `spec.md` rea
 
 ## Steps
 
-1. Load the accepted `intent.md` and any relevant organizational skills (brand, security, compliance, UX, API standards).
+1. Load the accepted `intents/<id>/01-intent.md` and any relevant organizational skills (brand, security, compliance, UX, API standards).
 2. If a Figma or design file is mentioned, use the `figma` MCP to pull the relevant frame or node.
 3. If background documentation lives in Notion, Confluence, or Google Docs, use the matching MCP to read it.
-4. Draft `spec.md` using `templates/spec.md`:
+4. Draft `intents/<id>/02-spec.md` using `templates/spec.md`:
    - requirements
    - design and data flow
    - acceptance criteria
@@ -34,10 +34,10 @@ Read an accepted `intent.md` and produce a requirements and design `spec.md` rea
    - areas of concern
 5. For each area of concern, identify the policy owner and route it for resolution.
 6. Ask the PM or designer: does the spec solve the stated problem? Are open questions answered or carried forward?
-7. Commit `spec.md` next to `intent.md` only after the PM accepts.
+7. Commit `02-spec.md` next to `01-intent.md` on the same `intent/<id>` branch only after the PM accepts.
 
 ## Output
 
-- `spec.md` that is ready for the plan-mode step.
+- `intents/<id>/02-spec.md` that is ready for the plan-mode step.
 - A list of resolved or carried-forward concerns and who resolved them.
 - A go / no-go recommendation for Build.
