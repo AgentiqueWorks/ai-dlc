@@ -1,0 +1,5 @@
+{
+  "name": "payment-audit-logging",
+  "prompt": "Add audit logging to payment events. Every payment event must emit an audit record with actor, action, entity, and timestamp. PII must not appear in the log. Update the schema if needed.",
+  "check": "evals/example-payment-audit-check.sh"
+}

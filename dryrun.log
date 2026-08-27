@@ -1,0 +1,6 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory `/Users/beto/Development/ai-dlc'
+python3 scripts/validate.py
+python3 -m pytest tests/ -q
+make: Leaving directory `/Users/beto/Development/ai-dlc'
+ 

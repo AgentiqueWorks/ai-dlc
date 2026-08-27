@@ -6,7 +6,7 @@
 
 This repository is a cross-platform set of [Agent Skills](https://agentskills.io) that turns the AI-Native SDLC playbook into version-controlled, reusable workflows for Claude Code, GitHub Copilot, OpenAI Codex, and any other Agent Skills-compatible tool.
 
-It is not another framework. It is a **set of markdown skills, artifact templates, and MCP client configs** that make the AI-native software development lifecycle explicit, auditable, and repeatable.
+It ships as a package: **skills**, **artifact templates**, **MCP client configs**, **governance hooks**, **eval examples**, and a small `ai-dlc` CLI that can scaffold and validate an AI-DLC project.
 
 ## The idea in one loop
 
@@ -22,7 +22,7 @@ idea → intent.md → spec.md → plan.md → diff + tests → review → deplo
 
 The artifact chain is the audit trail: who asked for what, what the agent produced, and who approved it. Humans stay accountable for judgment; agents handle the mechanical work in between. (Claude, 2026)
 
-This repo gives your team the skills, templates, and tool integrations to run that loop.
+This repo gives your team the skills, templates, governance, and tool integrations to run that loop.
 
 ## What is in this package
 
@@ -41,8 +41,29 @@ This repo gives your team the skills, templates, and tool integrations to run th
   - `06-security-scan` — Maintain
   - `06-on-call` — Maintain
 - **Artifact templates**: `intent.md`, `spec.md`, `plan.md`, `REVIEW.md`, `CLAUDE.md`, `bands.yaml`.
-- **MCP client templates**: GitHub, Jira, Slack, Monday, Figma, Notion, Confluence, Linear, GitLab, Datadog, Sentry, PagerDuty, Vercel, Google Workspace, Stripe, Intercom, and Playwright.
-- **Install and validation tooling**: `scripts/install.sh`, `scripts/validate.py`, `Makefile`, and a GitHub Actions workflow.
+- **MCP client templates**: 17 servers including GitHub, Jira, Slack, Monday, Figma, Notion, Confluence, Linear, GitLab, Datadog, Sentry, PagerDuty, Vercel, Google Workspace, Stripe, Intercom, and Playwright.
+- **Governance hooks and settings**: production gate, test-file protection, migration-ticket check, and a `.claude/settings.json` template.
+- **Eval examples**: `evals/example-csv-export.*` and `evals/example-payment-audit.*`.
+- **Install and validation tooling**: `ai-dlc` CLI, `scripts/install.sh`, `scripts/validate.py`, `Makefile`, and a GitHub Actions workflow.
+- **Claude Code plugin manifest**: `.claude-plugin/plugin.json`.
+
+## Quick start
+
+```bash
+pip install -e .
+
+# Validate the package
+ai-dlc validate
+
+# Install skills for Claude Code
+ai-dlc install claude
+
+# Or scaffold a new project
+ai-dlc init-repo ./my-product --client claude
+
+# Regenerate combined MCP configs after editing mcp/configs/
+ai-dlc mcp-sync
+```
 
 ## How a team should manage the AI-DLC
 
@@ -121,40 +142,24 @@ See the full example in `examples/enterprise-change.md`.
 
 For the full persona guide, read `references/team-flows.md`.
 
-## Quick start
+## Governance hooks
 
-1. **Install the skills** for your client:
+The `governance/` directory contains hook examples and a `.claude/settings.json` template:
 
-   ```bash
-   make install INSTALL_CLIENT=claude    # or codex, agents, github
-   ```
+- `hooks/production-gate.sh` — blocks `*deploy*production*` unless `RELEASE_APPROVAL` is set.
+- `hooks/block-test-edit.sh` — blocks test/spec edits while `FIX_TASK=1`.
+- `hooks/migration-ticket.sh` — blocks migration/schema/infra edits without `CHANGE_TICKET`.
 
-2. **Configure MCP** by copying the right template and adding your credentials:
+Use `make init-repo` to copy these into a new project's `.claude/hooks/`.
 
-   ```bash
-   # Claude Code
-   cp mcp/claude-mcp.json ~/.claude/.mcp.json
+## The `ai-dlc` CLI
 
-   # OpenAI Codex
-   cp mcp/mcp.json ~/.codex/.mcp.json
-
-   # GitHub Copilot / VS Code
-   cp mcp/copilot-mcp.json .vscode/mcp.json
-   ```
-
-   Then set the environment variables or config values for the tokens the servers expect (`GITHUB_TOKEN`, `ATLASSIAN_TOKEN`, `SLACK_TOKEN`, `MONDAY_TOKEN`, `FIGMA_TOKEN`, `DATADOG_API_KEY`, etc.).
-
-3. **Use a skill** in your agent:
-
-   - **Claude Code**: `/00-onboarding` or `/01-intent-capture`
-   - **OpenAI Codex**: `$00-onboarding` or `$01-intent-capture`
-   - **GitHub Copilot / cloud agent**: refer to the `AGENTS.md` and `.github/copilot-instructions.md` in the repo
-
-4. **Validate and test** before committing changes:
-
-   ```bash
-   make
-   ```
+```bash
+ai-dlc validate          # validate all skills and MCP configs
+ai-dlc install claude    # install skills for Claude Code
+ai-dlc init-repo ./app   # scaffold a new project
+ai-dlc mcp-sync          # regenerate combined mcp.json files
+```
 
 ## Repository layout
 
@@ -163,15 +168,24 @@ For the full persona guide, read `references/team-flows.md`.
 ├── skills/                 # canonical skill source
 ├── templates/              # SDLC artifact templates
 ├── mcp/                    # MCP client templates
+├── governance/             # hooks and managed settings
 ├── references/             # MCP catalog and team-usage flows
 ├── examples/               # startup and enterprise examples
-├── scripts/                # install.sh and validate.py
+├── evals/                  # example evals
+├── ai_dlc/                 # Python CLI
+├── scripts/                # install, validate, init-repo, mcp-sync
 ├── tests/                  # pytest validation
-├── .github/workflows/      # CI
+├── .claude-plugin/         # Claude Code plugin manifest
+├── .github/workflows/      # CI and release
 ├── AGENTS.md               # cross-client agent onboarding
 ├── CLAUDE.md               # Claude Code project context
-└── .github/copilot-instructions.md
+├── .github/copilot-instructions.md
+└── pyproject.toml
 ```
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 

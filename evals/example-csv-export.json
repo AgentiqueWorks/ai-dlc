@@ -1,0 +1,5 @@
+{
+  "name": "csv-export-empty-data",
+  "prompt": "Implement a CSV export button on the /reports page. The backend endpoint must return an empty CSV with headers when there are no rows, and must not crash. Use the existing report styles.",
+  "check": "evals/example-csv-export-check.sh"
+}
