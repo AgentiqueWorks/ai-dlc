@@ -1,7 +1,7 @@
 {
   "name": "ai-dlc",
-  "description": "AI-Native SDLC: 19 agent skills, artifact templates, governance hooks, and delivery measurement",
-  "version": "0.3.0",
+  "description": "AI-Native SDLC: 20 agent skills, artifact templates, governance hooks, integration branch, and delivery measurement",
+  "version": "0.4.0",
   "author": {
     "name": "AI-DLC contributors"
   },

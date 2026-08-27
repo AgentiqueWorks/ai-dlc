@@ -255,3 +255,39 @@ indicators:
     unit: count
     title: "PR findings that cite a policy"
     needs: "Review findings; should fall toward zero once a skill applies the policy"
+
+  merge-queue-depth:
+    stage: "05-deploy"
+    type: leading
+    computable: external
+    unit: count
+    title: "Merge queue depth"
+    needs: "Forge merge-queue API. Anthropic's ci-weather agent publishes this alongside build metrics and deploy lag."
+    reading: "The convergence point. When generation stops being the constraint, this is where the queue forms."
+
+  deploy-lag:
+    stage: "05-deploy"
+    type: leading
+    computable: external
+    unit: duration
+    title: "Deploy lag"
+    needs: "Deployment history: time from merge on the integration branch to running in production"
+    reading: "Merged is not shipped. This is the gap between the two, and it is invisible in PR metrics."
+
+  integration-failure-rate:
+    stage: "05-deploy"
+    type: lagging
+    computable: external
+    unit: ratio
+    title: "Integration failure rate"
+    needs: "CI history on the integration branch"
+    reading: "How often the combination is red while every individual PR was green. This is the number that justifies an integration branch, or retires it."
+
+  flag-ramp-duration:
+    stage: "05-deploy"
+    type: leading
+    computable: external
+    unit: duration
+    title: "Flag ramp duration"
+    needs: "Feature flag service history: dark ship to 100 percent"
+    reading: "How long an intent sits behind a flag. Flags that never reach 100 percent become permanent branches in the code."

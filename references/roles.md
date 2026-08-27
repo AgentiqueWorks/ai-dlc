@@ -33,7 +33,10 @@ Three rules, each enforced by something deterministic rather than by convention:
    blocks `gh pr review --approve` and `gh pr merge`; branch protection requires a
    human code owner.
 2. **The reviewer cannot authorize the release.** `production-gate.sh` needs
-   `RELEASE_APPROVAL`, which the release manager sets.
+   `RELEASE_APPROVAL`, which the release manager sets. Promotion from
+   `integration` to `main` is human-only and appears in no workflow template in
+   this package: a gate an agent can satisfy is not a gate. See
+   `integration-branch.md`.
 3. **The policy owner signs off policy changes.** A `CODEOWNERS` entry on
    `skills/` routes every skill change to them.
 
@@ -49,7 +52,7 @@ itself and in the commit that added it.
 | `03-plan.md` | Engineer or tech lead | **Approval** section |
 | The diff | Code owner | PR approval, branch protection |
 | `04-review.md` | Code owner — never the agent | **Human decision** section |
-| `05-deploy.md` | Release manager | **Gate** section |
+| `05-deploy.md` | Release manager authorizes promotion; the flag owner ramps | **Gate** and **Flag** sections |
 | `06-lessons.md` | Service owner | Follow-up intents |
 
 ## Source of truth

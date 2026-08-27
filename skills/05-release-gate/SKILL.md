@@ -44,6 +44,9 @@ Make approval gates enforceable at the moment the agent tries to act.
 3. A hook can allow, ask, or block. A block must explain the reason and the route to approval.
 4. Keep hook execution fast; heavy checks belong in CI or the PR.
 5. Document the approval condition (env var, ticket field, code-owner sign-off).
+6. Hand the gate to `05-integration`, which runs it at promotion and records the
+   outcome in `intents/<id>/05-deploy.md`. This play builds the gate; that play
+   walks through it.
 
 ## Output
 

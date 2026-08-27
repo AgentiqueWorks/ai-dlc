@@ -68,6 +68,20 @@ TOOL_RE = re.compile(r"^([A-Z][A-Za-z]*(\(.*\))?|mcp__[a-z0-9_-]+__[a-z0-9_*-]+)
 REFERENCE_RE = re.compile(r"`(references/[A-Za-z0-9._/-]+)`")
 TEMPLATE_RE = re.compile(r"`(templates/[A-Za-z0-9._/-]+)`")
 CLI_MENTION_RE = re.compile(r"`?ai-dlc\s+([a-z][a-z-]*)")
+CLI_FLAG_RE = re.compile(r"--[a-z][a-z0-9-]*")
+
+# subcommand -> the callable that builds its parser, so documented flags can be
+# checked the same way documented subcommands are.
+SUBCOMMAND_PARSERS = {
+    "validate": ("ai_dlc.validate", "build_parser"),
+    "mcp-sync": ("ai_dlc.mcpsync", "build_parser"),
+    "install": ("ai_dlc.install", "build_parser"),
+    "init-repo": ("ai_dlc.scaffold", "build_init_parser"),
+    "migrate": ("ai_dlc.scaffold", "build_migrate_parser"),
+    "backlog": ("ai_dlc.backlog", "build_parser"),
+    "metrics": ("ai_dlc.metrics", "build_parser"),
+    "adoption": ("ai_dlc.adoption", "build_parser"),
+}
 
 REQUIRED_TEMPLATES = (
     "01-intent.md",
@@ -656,6 +670,8 @@ def check_docs(root: Path) -> List[Problem]:
                     Problem("error", "docs.cli-unknown", _rel(doc, root), f"documents `ai-dlc {word}` which is not a subcommand")
                 )
 
+    problems.extend(_check_documented_flags(root, docs, subcommands))
+
     readme = root / "README.md"
     if readme.is_file():
         text = readme.read_text(encoding="utf-8")
@@ -664,6 +680,57 @@ def check_docs(root: Path) -> List[Problem]:
                 problems.append(
                     Problem("warn", "docs.cli-undocumented", "README.md", f"subcommand `ai-dlc {command}` is not in the README")
                 )
+    return problems
+
+
+def _subcommand_flags(command: str) -> Optional[Set[str]]:
+    """Every option string a subcommand accepts, or None if unknown."""
+    import importlib
+
+    entry = SUBCOMMAND_PARSERS.get(command)
+    if not entry:
+        return None
+    module_name, factory = entry
+    try:
+        parser = getattr(importlib.import_module(module_name), factory)()
+    except (ImportError, AttributeError):
+        return None
+    flags: Set[str] = set()
+    for action in parser._actions:
+        flags.update(action.option_strings)
+    return flags
+
+
+def _check_documented_flags(root: Path, docs: List[Path], subcommands: Set[str]) -> List[Problem]:
+    """A documented flag that does not exist is the same defect as a documented
+    subcommand that does not exist -- it just fails later, in a user's terminal."""
+    problems: List[Problem] = []
+    cache: Dict[str, Optional[Set[str]]] = {}
+    for doc in docs:
+        if not doc.is_file():
+            continue
+        for lineno, line in enumerate(doc.read_text(encoding="utf-8").splitlines(), start=1):
+            match = CLI_MENTION_RE.search(line)
+            if not match:
+                continue
+            command = match.group(1)
+            if command not in subcommands:
+                continue  # already reported as an unknown subcommand
+            if command not in cache:
+                cache[command] = _subcommand_flags(command)
+            known = cache[command]
+            if known is None:
+                continue
+            for flag in CLI_FLAG_RE.findall(line[match.end():]):
+                if flag not in known:
+                    problems.append(
+                        Problem(
+                            "error",
+                            "docs.cli-unknown-flag",
+                            f"{_rel(doc, root)}:{lineno}",
+                            f"documents `ai-dlc {command} {flag}` but that flag does not exist",
+                        )
+                    )
     return problems
 
 

@@ -226,3 +226,32 @@ def test_run_all_collects_from_every_check(tmp_path, repo_root):
     found = codes(validate.run_all(root), "error")
     assert "skill.name.mismatch" in found
     assert "mcp.json" in found
+
+
+def test_documented_flag_that_does_not_exist(tmp_path, repo_root):
+    """The same defect class as a documented-but-missing subcommand; it just
+    fails later, in a user's terminal."""
+    doc = tmp_path / "GUIDE.md"
+    doc.write_text("Run `ai-dlc metrics --not-a-real-flag` for details.\n", encoding="utf-8")
+    problems = validate._check_documented_flags(tmp_path, [doc], {"metrics"})
+    assert [p.code for p in problems] == ["docs.cli-unknown-flag"]
+    assert "--not-a-real-flag" in problems[0].message
+
+
+def test_real_flags_pass(tmp_path):
+    doc = tmp_path / "GUIDE.md"
+    doc.write_text("Run `ai-dlc backlog --collisions --json` to check.\n", encoding="utf-8")
+    assert validate._check_documented_flags(tmp_path, [doc], {"backlog"}) == []
+
+
+def test_every_subcommand_has_an_introspectable_parser():
+    """If a parser cannot be introspected the flag check silently passes, so the
+    map must stay complete as subcommands are added."""
+    from ai_dlc.cli import build_parser
+
+    registered = set()
+    for action in build_parser()._subparsers._group_actions:
+        registered.update(getattr(action, "choices", {}) or {})
+    assert registered == set(validate.SUBCOMMAND_PARSERS)
+    for command in registered:
+        assert validate._subcommand_flags(command), command

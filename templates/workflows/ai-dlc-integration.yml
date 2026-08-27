@@ -1,0 +1,86 @@
+# The integration branch: validate the combination, not each intent again.
+#
+# Per-PR CI already tested each intent against main as it was when the branch was
+# cut. This job answers the question that one cannot: do the intents landing
+# together actually work together?
+name: ai-dlc integration
+
+on:
+  push:
+    branches: [integration]
+  # Nightly, so a combination that only breaks under a full run is caught before
+  # anyone is waiting on a promotion.
+  schedule:
+    - cron: "0 6 * * 1-5"
+
+permissions:
+  contents: read
+  checks: write
+
+concurrency:
+  # Serialize the expensive step rather than letting every merge trigger its own
+  # build. Batch, build once, test once.
+  group: integration
+  cancel-in-progress: false
+
+jobs:
+  combination:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Which intents are in this combination
+        run: |
+          git log --first-parent origin/main..HEAD --name-only --format='' \
+            | grep '^intents/' | cut -d/ -f2 | sort -u | tee intents-in-flight.txt
+
+      - name: Full test suite
+        # Not the affected subset each PR ran. The point is the combination.
+        run: make test
+
+      - name: Cross-intent contract and schema checks
+        run: |
+          # API shapes, schema compatibility, shared fixtures, migration ordering
+          # when more than one intent in this batch carries a schema change.
+          make contract-test
+
+      - name: Evals, when any intent touched agent configuration
+        run: |
+          if git diff --name-only origin/main..HEAD \
+             | grep -qE '^(CLAUDE\.md|AGENTS\.md|\.claude/(skills|hooks)/|evals/)'; then
+            make evals
+          else
+            echo "No configuration changed in this batch; skipping the eval suite."
+          fi
+
+      - name: Publish queue health
+        if: always()
+        run: |
+          {
+            echo "## Integration branch"
+            echo
+            echo "Status: ${{ job.status }}"
+            echo
+            echo "Intents in this combination:"
+            sed 's/^/- /' intents-in-flight.txt
+            echo
+            echo "Open in the queue: $(gh pr list --base integration --json number -q 'length')"
+          } >> "$GITHUB_STEP_SUMMARY"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  # A red integration branch blocks every intent behind it, so it is an incident,
+  # not a backlog item. Page rather than open an issue.
+  alert:
+    needs: combination
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Integration is red. Every intent behind it is blocked."
+      # Wire to your pager here. Name the offending combination, not just the
+      # failing test: every PR in it was green on its own.
+
+  # Promotion from integration to main is deliberately NOT in this file.
+  # It is human-only, and a gate an agent can satisfy is not a gate.
