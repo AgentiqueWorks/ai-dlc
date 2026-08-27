@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "jira": {
+      "type": "remote",
+      "url": "https://mcp.atlassian.com/v1/sse",
+      "headers": {
+        "Authorization": "Bearer ${ATLASSIAN_TOKEN}"
+      }
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "mcpServers": {
+    "github": {
+      "type": "remote",
+      "url": "https://api.githubcopilot.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${GITHUB_TOKEN}"
+      }
+    },
+    "jira": {
+      "type": "remote",
+      "url": "https://mcp.atlassian.com/v1/sse",
+      "headers": {
+        "Authorization": "Bearer ${ATLASSIAN_TOKEN}"
+      }
+    },
+    "slack": {
+      "type": "remote",
+      "url": "https://mcp.slack.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${SLACK_TOKEN}"
+      }
+    },
+    "monday": {
+      "type": "remote",
+      "url": "https://mcp.monday.com/sse",
+      "headers": {
+        "Authorization": "Bearer ${MONDAY_TOKEN}"
+      }
+    }
+  }
+}
