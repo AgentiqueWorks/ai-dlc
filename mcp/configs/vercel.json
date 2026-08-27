@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "vercel": {
+      "type": "command",
+      "command": "npx",
+      "args": ["-y", "@vineethnkrishnan/vercel-mcp"],
+      "env": {
+        "VERCEL_TOKEN": "${VERCEL_TOKEN}"
+      }
+    }
+  }
+}

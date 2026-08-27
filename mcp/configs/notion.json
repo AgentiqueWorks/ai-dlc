@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "notion": {
+      "type": "remote",
+      "url": "https://mcp.notion.so/v1/mcp",
+      "headers": {
+        "Authorization": "Bearer ${NOTION_TOKEN}"
+      }
+    }
+  }
+}

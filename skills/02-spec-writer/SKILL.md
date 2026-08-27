@@ -9,16 +9,35 @@ description: Turn an accepted intent.md into a requirements and design spec.md, 
 
 Read an accepted `intent.md` and produce a requirements and design `spec.md` ready for engineering.
 
+## Who uses this
+
+- **Product managers** who need a spec they can hand to engineers.
+- **Designers** who want the spec to reference Figma mocks and design-system rules.
+- **Security / compliance leads** who need policy concerns flagged before build begins.
+
+## Example prompts
+
+- "Read `intent/JIRA-4822.md` and write `spec.md` for the audit-logging feature."
+- "Pull the Figma mock for the CSV export and include the design in the spec."
+- "Apply the security and brand skills and flag any conflicts."
+
 ## Steps
 
-1. Load the accepted `intent.md` and any organizational skills the user has available (brand, security, compliance, UX).
-2. Conduct a design session: ask clarifying questions if needed, then draft requirements, design, acceptance criteria, and out-of-scope items.
-3. Flag any areas of concern where constraints conflict or where the design cannot satisfy a policy.
-4. Write `spec.md` using `templates/spec.md`.
-5. Resolve each flagged concern with the appropriate policy owner before moving to Build.
+1. Load the accepted `intent.md` and any relevant organizational skills (brand, security, compliance, UX, API standards).
+2. If a Figma or design file is mentioned, use the `figma` MCP to pull the relevant frame or node.
+3. If background documentation lives in Notion, Confluence, or Google Docs, use the matching MCP to read it.
+4. Draft `spec.md` using `templates/spec.md`:
+   - requirements
+   - design and data flow
+   - acceptance criteria
+   - explicit out-of-scope items
+   - areas of concern
+5. For each area of concern, identify the policy owner and route it for resolution.
+6. Ask the PM or designer: does the spec solve the stated problem? Are open questions answered or carried forward?
+7. Commit `spec.md` next to `intent.md` only after the PM accepts.
 
 ## Output
 
-- `spec.md` placed next to the source `intent.md`.
-- A list of resolved or carried-forward concerns.
-- A recommendation on whether the spec is ready for the plan-mode step.
+- `spec.md` that is ready for the plan-mode step.
+- A list of resolved or carried-forward concerns and who resolved them.
+- A go / no-go recommendation for Build.

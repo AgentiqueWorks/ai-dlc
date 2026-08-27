@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "sentry": {
+      "type": "command",
+      "command": "npx",
+      "args": ["-y", "@vineethnkrishnan/sentry-mcp"],
+      "env": {
+        "SENTRY_AUTH_TOKEN": "${SENTRY_TOKEN}",
+        "SENTRY_DSN": "${SENTRY_DSN}"  
+      }
+    }
+  }
+}

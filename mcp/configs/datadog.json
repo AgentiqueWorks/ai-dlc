@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "datadog": {
+      "type": "command",
+      "command": "npx",
+      "args": ["-y", "@vineethnkrishnan/datadog-mcp"],
+      "env": {
+        "DD_API_KEY": "${DATADOG_API_KEY}",
+        "DD_APP_KEY": "${DATADOG_APP_KEY}",
+        "DD_SITE": "${DATADOG_SITE:-datadoghq.com}"
+      }
+    }
+  }
+}

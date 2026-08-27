@@ -1,10 +1,73 @@
 {
   "mcpServers": {
+    "confluence": {
+      "type": "remote",
+      "url": "https://mcp.atlassian.com/v1/sse",
+      "headers": {
+        "Authorization": "Bearer ${ATLASSIAN_TOKEN}"
+      }
+    },
+    "datadog": {
+      "type": "command",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@vineethnkrishnan/datadog-mcp"
+      ],
+      "env": {
+        "DD_API_KEY": "${DATADOG_API_KEY}",
+        "DD_APP_KEY": "${DATADOG_APP_KEY}",
+        "DD_SITE": "${DATADOG_SITE:-datadoghq.com}"
+      }
+    },
+    "figma": {
+      "type": "remote",
+      "url": "https://mcp.figma.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${FIGMA_TOKEN}"
+      }
+    },
     "github": {
       "type": "remote",
       "url": "https://api.githubcopilot.com/mcp",
       "headers": {
         "Authorization": "Bearer ${GITHUB_TOKEN}"
+      }
+    },
+    "gitlab": {
+      "type": "command",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@yoda-digital/mcp-gitlab-server"
+      ],
+      "env": {
+        "GITLAB_TOKEN": "${GITLAB_TOKEN}",
+        "GITLAB_URL": "${GITLAB_URL:-https://gitlab.com}"
+      }
+    },
+    "google-workspace": {
+      "type": "command",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@vineethnkrishnan/google-workspace-mcp"
+      ],
+      "env": {
+        "GOOGLE_CLIENT_ID": "${GOOGLE_CLIENT_ID}",
+        "GOOGLE_CLIENT_SECRET": "${GOOGLE_CLIENT_SECRET}",
+        "GOOGLE_REFRESH_TOKEN": "${GOOGLE_REFRESH_TOKEN}"
+      }
+    },
+    "intercom": {
+      "type": "command",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@vineethnkrishnan/intercom-mcp"
+      ],
+      "env": {
+        "INTERCOM_ACCESS_TOKEN": "${INTERCOM_TOKEN}"
       }
     },
     "jira": {
@@ -14,11 +77,11 @@
         "Authorization": "Bearer ${ATLASSIAN_TOKEN}"
       }
     },
-    "slack": {
+    "linear": {
       "type": "remote",
-      "url": "https://mcp.slack.com/mcp",
+      "url": "https://mcp.linear.app/mcp",
       "headers": {
-        "Authorization": "Bearer ${SLACK_TOKEN}"
+        "Authorization": "Bearer ${LINEAR_TOKEN}"
       }
     },
     "monday": {
@@ -26,6 +89,73 @@
       "url": "https://mcp.monday.com/sse",
       "headers": {
         "Authorization": "Bearer ${MONDAY_TOKEN}"
+      }
+    },
+    "notion": {
+      "type": "remote",
+      "url": "https://mcp.notion.so/v1/mcp",
+      "headers": {
+        "Authorization": "Bearer ${NOTION_TOKEN}"
+      }
+    },
+    "pagerduty": {
+      "type": "command",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@vineethnkrishnan/pagerduty-mcp"
+      ],
+      "env": {
+        "PAGERDUTY_API_KEY": "${PAGERDUTY_TOKEN}"
+      }
+    },
+    "playwright": {
+      "type": "command",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@anthropic-ai/playwright-mcp"
+      ]
+    },
+    "sentry": {
+      "type": "command",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@vineethnkrishnan/sentry-mcp"
+      ],
+      "env": {
+        "SENTRY_AUTH_TOKEN": "${SENTRY_TOKEN}",
+        "SENTRY_DSN": "${SENTRY_DSN}"
+      }
+    },
+    "slack": {
+      "type": "remote",
+      "url": "https://mcp.slack.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${SLACK_TOKEN}"
+      }
+    },
+    "stripe": {
+      "type": "command",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@vineethnkrishnan/stripe-mcp"
+      ],
+      "env": {
+        "STRIPE_API_KEY": "${STRIPE_API_KEY}"
+      }
+    },
+    "vercel": {
+      "type": "command",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@vineethnkrishnan/vercel-mcp"
+      ],
+      "env": {
+        "VERCEL_TOKEN": "${VERCEL_TOKEN}"
       }
     }
   }

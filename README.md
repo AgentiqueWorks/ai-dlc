@@ -6,11 +6,11 @@
 
 This repository is a cross-platform set of [Agent Skills](https://agentskills.io) that turns the AI-Native SDLC playbook into version-controlled, reusable workflows for Claude Code, GitHub Copilot, OpenAI Codex, and any other Agent Skills-compatible tool.
 
-It is not another framework. It is a **set of markdown skills and artifact templates** that make the AI-native software development lifecycle explicit, auditable, and repeatable.
+It is not another framework. It is a **set of markdown skills, artifact templates, and MCP client configs** that make the AI-native software development lifecycle explicit, auditable, and repeatable.
 
-## The idea
+## The idea in one loop
 
-In the traditional SDLC, every stage is a human gate: product managers write requirements, architects write designs, engineers write code, QA verifies, release teams ship, and operations watches production. When AI agents can write code in hours, that linear, document-and-handoff model becomes the bottleneck.
+In the traditional SDLC, every stage is a human gate. When AI agents can write code in hours, that linear, document-and-handoff model becomes the bottleneck.
 
 The AI-native SDLC reimagines the lifecycle as a loop where **each stage commits an artifact the next stage can read**:
 
@@ -22,11 +22,12 @@ idea → intent.md → spec.md → plan.md → diff + tests → review → deplo
 
 The artifact chain is the audit trail: who asked for what, what the agent produced, and who approved it. Humans stay accountable for judgment; agents handle the mechanical work in between. (Claude, 2026)
 
-This repo gives your team the skills and templates to run that loop.
+This repo gives your team the skills, templates, and tool integrations to run that loop.
 
 ## What is in this package
 
-- **12 skills** covering all six stages of the AI-Native SDLC:
+- **13 skills** covering all six SDLC stages plus onboarding:
+  - `00-onboarding` — start here
   - `01-intent-capture` — Plan
   - `02-spec-writer` — Design
   - `03-plan-mode` — Build
@@ -40,10 +41,10 @@ This repo gives your team the skills and templates to run that loop.
   - `06-security-scan` — Maintain
   - `06-on-call` — Maintain
 - **Artifact templates**: `intent.md`, `spec.md`, `plan.md`, `REVIEW.md`, `CLAUDE.md`, `bands.yaml`.
-- **MCP client templates**: pre-wired for GitHub, Jira, Slack, and Monday.
+- **MCP client templates**: GitHub, Jira, Slack, Monday, Figma, Notion, Confluence, Linear, GitLab, Datadog, Sentry, PagerDuty, Vercel, Google Workspace, Stripe, Intercom, and Playwright.
 - **Install and validation tooling**: `scripts/install.sh`, `scripts/validate.py`, `Makefile`, and a GitHub Actions workflow.
 
-## How a team should manage the AI-DLC with this repo
+## How a team should manage the AI-DLC
 
 ### 1. Version the skills next to the code
 
@@ -72,11 +73,53 @@ Agents should handle capture, drafting, testing, triage, and first-pass review. 
 
 ### 5. Connect to existing tools over MCP
 
-Slack, Jira, GitHub, and Monday are not replaced; they are connected. Use the provided MCP client templates to let the agent read tickets, post updates, create issues, and query boards under the same human approval gates. The templates point to the official remote MCP endpoints; you only need to provide your tokens.
+Slack, Jira, GitHub, Figma, Datadog, PagerDuty, and the rest are not replaced; they are connected. Use the provided MCP client templates to let the agent read tickets, pull mocks, post updates, query metrics, and deploy under the same human approval gates. The templates point to official remote endpoints or well-known community packages; you only need to provide your tokens.
 
 ### 6. Regression-test your agent configuration
 
 `CLAUDE.md`, skills, hooks, and MCP setup steer the agent. They deserve the same regression testing as code. Use the `04-continuous-evals` skill to build an eval suite and run it in CI whenever configuration changes.
+
+## Personas: who touches which skill
+
+| Persona | Skill | MCP servers | Artifact |
+|---|---|---|---|
+| PM | `01-intent-capture` | Slack, Intercom, Jira, Notion, Monday | `intent.md` |
+| Designer | `02-spec-writer` | Figma, Notion, Confluence | `spec.md` |
+| Engineer | `03-plan-mode` | GitHub, GitLab | `plan.md` |
+| QA / Test | `04-continuous-evals` | Playwright, GitHub | `evals/` |
+| Tech lead | `05-pr-review` | GitHub, GitLab | review findings |
+| Release manager | `05-release-gate` | GitHub, Vercel | `settings.json` / hooks |
+| SRE | `06-closing-the-loop` | Datadog, PagerDuty, Slack | `intent.md` |
+| Security | `06-security-scan` | Sentry, GitHub, Jira | `intent.md` / PR |
+| Platform engineer | `03-claude-md` | GitHub, GitLab | `CLAUDE.md` |
+
+## Two real flows
+
+### Startup: CSV export in an afternoon
+
+1. A customer asks for CSV export in Intercom.
+2. The PM runs `01-intent-capture`; the agent pulls the Intercom thread and writes `intent.md`.
+3. The PM runs `02-spec-writer`; the agent pulls the Figma mock and writes `spec.md`.
+4. The engineer runs `03-plan-mode`; the agent writes `plan.md` with the files, order, and proof.
+5. The agent implements, and `04-feedback-loop` runs `npm test` and a Playwright screenshot.
+6. `05-pr-review` tags a missing input-validation check; the engineer fixes it and merges.
+7. `06-closing-the-loop` watches `vercel` and `sentry` after deploy.
+
+See the full example in `examples/startup-feature.md`.
+
+### Enterprise: payment audit logging
+
+1. `JIRA-4822` requires audit logging. `01-intent-capture` pulls the Jira ticket and notes PCI/PII constraints.
+2. `02-spec-writer` applies security and compliance skills, flags the audit requirements, and waits for the policy owner.
+3. `03-plan-mode` writes `plan.md` and routes it for higher-risk sign-off.
+4. Implementation runs under hooks: no `schema.sql` edit without a change-ticket number.
+5. `04-continuous-evals` adds a regression check for the new schema.
+6. `05-pr-review` and `05-release-gate` run; production is blocked until the change-advisory board sets `RELEASE_APPROVAL`.
+7. `06-security-scan` and `06-closing-the-loop` keep watching.
+
+See the full example in `examples/enterprise-change.md`.
+
+For the full persona guide, read `references/team-flows.md`.
 
 ## Quick start
 
@@ -99,12 +142,12 @@ Slack, Jira, GitHub, and Monday are not replaced; they are connected. Use the pr
    cp mcp/copilot-mcp.json .vscode/mcp.json
    ```
 
-   Then set the environment variables or config values for `GITHUB_TOKEN`, `ATLASSIAN_TOKEN`, `SLACK_TOKEN`, and `MONDAY_TOKEN`.
+   Then set the environment variables or config values for the tokens the servers expect (`GITHUB_TOKEN`, `ATLASSIAN_TOKEN`, `SLACK_TOKEN`, `MONDAY_TOKEN`, `FIGMA_TOKEN`, `DATADOG_API_KEY`, etc.).
 
 3. **Use a skill** in your agent:
 
-   - **Claude Code**: `/01-intent-capture`
-   - **OpenAI Codex**: `$01-intent-capture`
+   - **Claude Code**: `/00-onboarding` or `/01-intent-capture`
+   - **OpenAI Codex**: `$00-onboarding` or `$01-intent-capture`
    - **GitHub Copilot / cloud agent**: refer to the `AGENTS.md` and `.github/copilot-instructions.md` in the repo
 
 4. **Validate and test** before committing changes:
@@ -120,6 +163,8 @@ Slack, Jira, GitHub, and Monday are not replaced; they are connected. Use the pr
 ├── skills/                 # canonical skill source
 ├── templates/              # SDLC artifact templates
 ├── mcp/                    # MCP client templates
+├── references/             # MCP catalog and team-usage flows
+├── examples/               # startup and enterprise examples
 ├── scripts/                # install.sh and validate.py
 ├── tests/                  # pytest validation
 ├── .github/workflows/      # CI

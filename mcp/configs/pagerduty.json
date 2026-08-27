@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "pagerduty": {
+      "type": "command",
+      "command": "npx",
+      "args": ["-y", "@vineethnkrishnan/pagerduty-mcp"],
+      "env": {
+        "PAGERDUTY_API_KEY": "${PAGERDUTY_TOKEN}"
+      }
+    }
+  }
+}
