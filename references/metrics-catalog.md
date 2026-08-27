@@ -38,7 +38,7 @@ number. It is reported as `n/a` with the system that owns it named, and
 | `plan-diff-alignment` | Build | lagging | `## Files that change` vs. the real diff |
 | `rework-after-review` | Test | lagging | Commits on the branch after `04-review.md` landed |
 
-`references/indicator-recipes.md` inside the `07-metrics` skill gives the exact
+`references/indicator-recipes.md` inside the `platform-metrics` skill gives the exact
 git command behind each one.
 
 ### The two caveats worth stating out loud

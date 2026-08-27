@@ -28,8 +28,11 @@ things that are easy to get wrong by hand:
 
 ## Adding a skill
 
-1. Create `skills/<stage>-<name>/SKILL.md`. Prefixes `00`–`06` map to the six
-   stages; `07` is for cross-cutting plays.
+1. Create `skills/<stage>-<name>/SKILL.md`. The prefix is the stage: `00`
+   (onboarding) and `01`–`06` for the six SDLC stages. A play that is not a
+   stage — measurement, tooling, policy that applies throughout — uses the
+   `platform-` prefix instead of a number, matching `metadata.stage: platform`.
+   Do not invent a seventh number; the playbook has six stages.
 2. Frontmatter: `name` (must equal the directory), `description` (say when to use
    it), `allowed-tools` (least privilege), and a full `metadata` block —
    `stage`, `persona`, `requires`, `produces`, `indicators`, `mcp`, `maturity`.

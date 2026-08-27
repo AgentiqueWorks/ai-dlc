@@ -6,7 +6,9 @@
 
 - Six skills for plays the package did not cover: `03-subagents`,
   `03-parallel-sessions`, `03-org-skills`, `05-managed-settings`,
-  `05-cicd-integration`, and `07-metrics`.
+  `05-cicd-integration`, and `platform-metrics`. Cross-cutting plays use the
+  `platform-` prefix rather than a number: the playbook has six stages, and a
+  `07-` prefix would imply a seventh.
 - `ai-dlc metrics` — computes eight delivery indicators from the `intents/` tree
   and local git history, with `--json`, `--markdown`, and `--fail-under-*`
   thresholds for CI.
@@ -46,6 +48,8 @@
 - `init-repo` scaffolds `intents/<id>/`, subagents, and optional CI workflows,
   and no longer creates the flat `intent/ spec/ plan/` directories.
 - Artifact templates renamed to `01-intent.md`, `02-spec.md`, `03-plan.md`.
+  `ai-dlc migrate` renames a vendored `templates/` directory in place and adds
+  the templates the chain gained, without overwriting customized copies.
 - `validate` rebuilt: collects all problems instead of short-circuiting, and adds
   checks for the dependency graph, indicator registry drift, MCP fragment shape
   and placeholders, generated-config drift, hook executability in the git index,
@@ -54,6 +58,10 @@
 - Tests import from `ai_dlc.validate` rather than reimplementing its rules.
 
 ### Fixed
+
+- `intent-survival`'s approximation caveat now appears in the rendered report
+  and the Markdown output, not only in the skill documentation. A team that
+  squash-merges reads 0% while shipping normally, and the report says so.
 
 - **Hooks read stdin twice**, so the second read was always empty and
   `block-test-edit.sh` and `migration-ticket.sh` never actually gated anything.

@@ -152,3 +152,36 @@ def test_registry_matches_catalog():
     catalog = load_indicator_catalog()
     local = {n for n, spec in catalog.items() if spec["computable"] != "external"}
     assert set(metrics.REGISTRY) == local
+
+
+def test_approximate_caveat_reaches_the_rendered_report(chain):
+    """A 0% survival reading must carry its explanation into the output a team
+    actually reads, not only into the skill documentation."""
+    text = metrics.render_table(metrics.collect(chain.path))
+    assert "intent-survival ~" in text
+    assert "~ intent-survival is approximate." in text
+    assert "squash-merges" in text
+
+
+def test_approximate_caveat_survives_markdown_output(chain):
+    text = metrics.render_markdown(metrics.collect(chain.path))
+    assert "`intent-survival` is approximate." in text
+
+
+def test_shallow_clone_suppresses_history_indicators(chain, tmp_path):
+    """A depth-1 clone must produce n/a, never a confident wrong number."""
+    import subprocess
+
+    clone = tmp_path / "shallow"
+    result = subprocess.run(
+        ["git", "clone", "--depth", "1", "file://" + str(chain.path), str(clone)],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        pytest.skip(f"shallow clone unavailable: {result.stderr.strip()}")
+
+    report = metrics.collect(clone)
+    assert any("shallow" in w for w in report.warnings)
+    for name in ("stage-latency", "plan-diff-alignment", "rework-after-review"):
+        assert all(not r.computable for r in report.by_name(name)), name

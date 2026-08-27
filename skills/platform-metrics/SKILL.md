@@ -1,5 +1,5 @@
 ---
-name: 07-metrics
+name: platform-metrics
 description: Measure whether the AI-native SDLC is actually working, using leading and lagging indicators per stage — computing what the repository can compute and naming the source for what it cannot. Use monthly, or when deciding which play to adopt next.
 allowed-tools:
   - Read

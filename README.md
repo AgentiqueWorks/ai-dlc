@@ -75,7 +75,12 @@ intents/csv-export-20260826/
 | Test | `04-feedback-loop`, `04-continuous-evals` |
 | Deploy | `05-pr-review`, `05-release-gate`, `05-cicd-triage`, `05-cicd-integration`, `05-managed-settings` |
 | Maintain | `06-closing-the-loop`, `06-security-scan`, `06-on-call` |
-| Cross-cutting | `07-metrics` |
+| Cross-cutting | `platform-metrics` |
+
+The prefix is the stage. `00` is onboarding and `01`–`06` are the six SDLC
+stages the playbook defines. A play that is not a stage — measurement, tooling,
+policy that applies throughout — carries the `platform-` prefix instead of a
+number. **There is no seventh stage.**
 
 Plus:
 
@@ -208,7 +213,7 @@ ready for the next play are in `references/adoption.md`.
 | Platform engineer | `03-claude-md`, `05-managed-settings`, `05-cicd-integration` | GitHub, GitLab | `CLAUDE.md`, settings, workflows |
 | SRE | `06-closing-the-loop` | Datadog, PagerDuty, Slack | `01-intent.md`, `bands.yaml` |
 | Security | `06-security-scan` | Sentry, GitHub, Jira | `01-intent.md` / PR |
-| Tech lead / Platform | `07-metrics` | GitHub, Datadog | `metrics/` |
+| Tech lead / Platform | `platform-metrics` | GitHub, Datadog | `metrics/` |
 
 Who decides what, and which decisions an agent must never make, is in
 `references/roles.md`.
@@ -260,6 +265,13 @@ Three layers, in increasing order of authority — see `governance/README.md`.
 | `block-test-edit.sh` | Editing tests while fixing a bug | Unsetting `FIX_TASK`, in the open |
 | `no-self-approve.sh` | `gh pr review --approve`, `gh pr merge`, force-push to main | Nothing — a human does it |
 | `detect-bands.sh` | Nothing; it is the deterministic band detector | — |
+
+> **`allowed-tools` is not a security control.** Claude Code enforces it; Codex,
+> Copilot, and other Agent Skills clients ignore the field entirely. It is
+> written for least privilege and it is useful, but the gates that actually hold
+> are hooks, `permissions.deny`, the sandbox, and branch protection. Do not
+> treat a skill's tool list as a boundary when the same skill is installed for a
+> client that does not read it.
 
 `governance/managed-settings.json` holds the administrator-controlled policy that
 engineers cannot override: credential paths, self-approval, sandbox, network

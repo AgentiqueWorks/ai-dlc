@@ -20,7 +20,7 @@ by their position in the chain: `01-intent.md`, `02-spec.md`, `03-plan.md`,
 | Platform engineer | `03-claude-md`, `05-managed-settings`, `05-cicd-integration` | GitHub, GitLab | Agent memory, non-overridable policy, pipeline wiring. |
 | SRE / Service owner | `06-closing-the-loop` | Datadog, PagerDuty, Slack | Define control bands; respond to breaches. |
 | Security lead | `06-security-scan` | Sentry, GitHub, Jira | Own the security skill; route scan findings. |
-| Tech lead / Platform | `07-metrics` | GitHub, Datadog | Decide which play to adopt next, from evidence. |
+| Tech lead / Platform | `platform-metrics` | GitHub, Datadog | Decide which play to adopt next, from evidence. |
 
 Who is accountable for which decision — and which decisions an agent must never
 make — is in `roles.md`. The order to adopt the plays in is in `adoption.md`.

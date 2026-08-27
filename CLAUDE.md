@@ -21,7 +21,7 @@
 
 ## Conventions
 
-- Skills are `skills/<stage>-<name>/SKILL.md`. `07-` is the cross-cutting prefix.
+- Skills are `skills/<stage>-<name>/SKILL.md`. `platform-` is the cross-cutting prefix for plays that are not a stage.
 - Frontmatter top-level keys are a **closed set**: `name`, `description`,
   `allowed-tools`, `metadata`, `license`, `version`. Everything custom nests
   under `metadata` as **strings** — the Skills API metadata contract is

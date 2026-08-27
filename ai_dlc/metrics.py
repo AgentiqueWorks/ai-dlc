@@ -290,7 +290,11 @@ def indicator_intent_survival(ctx: Context) -> List[IndicatorResult]:
             detail={"landed": landed, "open": open_ids, "stale": stale_ids},
             computable=bool(total),
             approximate=True,
-            note="squash-merged branches that never landed intents/ are invisible here",
+            note=(
+                "It counts an intent as landed when 01-intent.md reaches the default branch. "
+                "A team that squash-merges and deletes branches without landing intents/ will read 0% "
+                "while shipping normally, so check the merge strategy before reading this as a delivery problem."
+            ),
         )
     ]
 
@@ -624,6 +628,13 @@ def render_table(report: Report) -> str:
             )
         lines.append(render.table(["INTENT", "INDICATOR", "VALUE", "DETAIL"], rows))
 
+    footnotes = [r for r in report.results if r.approximate and r.note and r.scope == "repo"]
+    if footnotes:
+        lines.append("")
+        for result in footnotes:
+            label = result.name + (f":{result.subject}" if result.subject else "")
+            lines.append(f"~ {label} is approximate. {result.note}")
+
     if report.warnings:
         lines.append("")
         for warning in report.warnings:
@@ -706,6 +717,16 @@ def render_markdown(report: Report) -> str:
             "",
             render.markdown_table(["Indicator", "Value", "Detail"], rows),
         ]
+        + (
+            [""]
+            + [
+                f"`{r.name}` is approximate. {r.note}"
+                for r in report.results
+                if r.approximate and r.note and r.scope == "repo"
+            ]
+            if any(r.approximate and r.note and r.scope == "repo" for r in report.results)
+            else []
+        )
     )
 
 

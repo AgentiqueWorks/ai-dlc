@@ -48,7 +48,7 @@ downstream works well while it does not.
 10. **`03-parallel-sessions`** — only once `CLAUDE.md`, tests, and hooks are
     mature. Parallelism multiplies whatever your guardrails already do, in both
     directions.
-11. **`07-metrics`** — as soon as there are intents and plans to measure. Early
+11. **`platform-metrics`** — as soon as there are intents and plans to measure. Early
     numbers with small `n` are still useful for finding the bottleneck stage.
 12. **`06-closing-the-loop`** — last of the maintenance plays, because it needs
     the intent format, the review gate, hooks, CI integration, and a rollback

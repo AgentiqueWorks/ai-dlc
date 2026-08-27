@@ -25,6 +25,9 @@ __all__ = ["LAYOUT_VERSION", "Action", "detect_layout", "scaffold", "plan_migrat
 PACKAGE_ROOT = Path(__file__).resolve().parent.parent
 LAYOUT_VERSION = 2
 
+# Flat v1 directories and the artifact each one held.
+_V1_MAP = {"intent": "01-intent.md", "spec": "02-spec.md", "plan": "03-plan.md"}
+
 CLIENT_SKILL_DIRS: Dict[str, str] = {
     "claude": ".claude/skills",
     "codex": ".codex/skills",
@@ -91,22 +94,44 @@ class Action:
         return f"{self.kind:>6}  {shown}{suffix}"
 
 
+# Artifact templates renamed in layout v2, so a vendored copy of templates/
+# from an older release still carries the old names.
+_V1_TEMPLATES = {"intent.md": "01-intent.md", "spec.md": "02-spec.md", "plan.md": "03-plan.md"}
+
+
+def _v1_signals(target: Path) -> bool:
+    if any((target / name).is_dir() for name in _V1_MAP):
+        return True
+    if any((target / name).is_file() for name in ("intent.md", "spec.md", "plan.md")):
+        return True
+    # A vendored templates/ directory using the pre-0.3.0 artifact names.
+    return any((target / "templates" / old).is_file() for old in _V1_TEMPLATES)
+
+
 def detect_layout(target: Path) -> int:
-    """2 = current layout, 1 = the old flat layout, 0 = not an AI-DLC project."""
+    """2 = current layout, 1 = an older layout that needs migrating, 0 = not an
+    AI-DLC project.
+
+    The v1 signals are checked before ``intents/`` on purpose: a project can have
+    adopted ``intents/<id>/`` while still carrying a vendored ``templates/``
+    directory with the pre-0.3.0 artifact names, and that still needs migrating.
+    """
     target = Path(target)
     marker = target / ".ai-dlc" / "layout.json"
     if marker.is_file():
         try:
-            return int(json.loads(marker.read_text(encoding="utf-8")).get("layout_version", LAYOUT_VERSION))
+            return int(json.loads(_strip_comments(marker.read_text(encoding="utf-8"))).get("layout_version", LAYOUT_VERSION))
         except (json.JSONDecodeError, ValueError, TypeError):
             return LAYOUT_VERSION
+    if _v1_signals(target):
+        return 1
     if (target / "intents").is_dir():
         return 2
-    if any((target / name).is_dir() for name in ("intent", "spec", "plan")):
-        return 1
-    if any((target / name).is_file() for name in ("intent.md", "spec.md", "plan.md")):
-        return 1
     return 0
+
+
+def _strip_comments(text: str) -> str:
+    return "\n".join(line for line in text.splitlines() if not line.lstrip().startswith("#"))
 
 
 def _write(path: Path, content: str, actions: List[Action], dry_run: bool, force: bool, reason: str = "") -> None:
@@ -210,9 +235,6 @@ def scaffold(
 
 # ------------------------------------------------------------------ migration
 
-_V1_MAP = {"intent": "01-intent.md", "spec": "02-spec.md", "plan": "03-plan.md"}
-
-
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -248,6 +270,26 @@ def plan_migration(target: Path) -> List[Action]:
         else:
             actions.append(Action("skip", path, path, "modified by you; move it into intents/<id>/ yourself"))
 
+    # A vendored templates/ directory from before 0.3.0 keeps the old names.
+    for old, new in _V1_TEMPLATES.items():
+        source = target / "templates" / old
+        if not source.is_file():
+            continue
+        destination = target / "templates" / new
+        if destination.exists():
+            actions.append(Action("skip", source, source, f"{new} already exists"))
+            continue
+        actions.append(Action("move", destination, source, "renamed artifact template"))
+
+    # Templates the chain gained in 0.3.0. Reported, then copied, never silently
+    # overwriting anything the project already has.
+    if (target / "templates").is_dir():
+        for name in ARTIFACT_TEMPLATES + tuple(ROOT_TEMPLATES):
+            shipped = PACKAGE_ROOT / "templates" / name
+            destination = target / "templates" / name
+            if shipped.is_file() and not destination.exists() and name not in _V1_TEMPLATES.values():
+                actions.append(Action("copy", destination, shipped, "new in this release"))
+
     actions.append(Action("create", target / ".ai-dlc" / "layout.json", reason=f"layout_version {LAYOUT_VERSION}"))
     return actions
 
@@ -264,6 +306,10 @@ def apply_migration(actions: List[Action], target: Path, use_git: bool = True) -
                     shutil.move(str(action.src), str(action.dst))
             else:
                 shutil.move(str(action.src), str(action.dst))
+        elif action.kind == "copy" and action.src:
+            action.dst.parent.mkdir(parents=True, exist_ok=True)
+            if not action.dst.exists():
+                shutil.copy2(action.src, action.dst)
         elif action.kind == "create" and action.dst.name == "layout.json":
             action.dst.parent.mkdir(parents=True, exist_ok=True)
             action.dst.write_text(

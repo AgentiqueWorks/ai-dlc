@@ -93,3 +93,58 @@ def test_migrating_a_current_project_is_a_noop(tmp_path):
     scaffold.scaffold(target)
     assert scaffold.migrate_main([str(target)]) == 0
     assert scaffold.plan_migration(target) == []
+
+
+def test_detects_a_vendored_templates_directory_as_v1(tmp_path):
+    """A project can be on intents/<id>/ and still carry pre-0.3.0 template
+    names, which is exactly the vendored case the rename breaks."""
+    target = tmp_path / "app"
+    (target / "intents").mkdir(parents=True)
+    (target / "templates").mkdir()
+    (target / "templates" / "intent.md").write_text("# Intent: <short title>\n")
+    assert scaffold.detect_layout(target) == 1
+
+
+def test_migration_renames_vendored_templates(tmp_path):
+    target = tmp_path / "app"
+    (target / "intents").mkdir(parents=True)
+    (target / "templates").mkdir()
+    (target / "templates" / "intent.md").write_text("# my customized intent\n")
+    (target / "templates" / "spec.md").write_text("# my customized spec\n")
+
+    actions = scaffold.plan_migration(target)
+    scaffold.apply_migration(actions, target, use_git=False)
+
+    assert (target / "templates" / "01-intent.md").read_text() == "# my customized intent\n"
+    assert (target / "templates" / "02-spec.md").read_text() == "# my customized spec\n"
+    assert not (target / "templates" / "intent.md").exists()
+    # Templates the chain gained in 0.3.0 are added, not invented on the fly.
+    assert (target / "templates" / "05-deploy.md").is_file()
+    assert scaffold.detect_layout(target) == 2
+
+
+def test_migration_does_not_overwrite_an_existing_new_name(tmp_path):
+    target = tmp_path / "app"
+    (target / "intents").mkdir(parents=True)
+    (target / "templates").mkdir()
+    (target / "templates" / "intent.md").write_text("old\n")
+    (target / "templates" / "01-intent.md").write_text("already migrated\n")
+
+    actions = scaffold.plan_migration(target)
+    scaffold.apply_migration(actions, target, use_git=False)
+
+    assert (target / "templates" / "01-intent.md").read_text() == "already migrated\n"
+    assert (target / "templates" / "intent.md").read_text() == "old\n"
+
+
+def test_customized_root_artifacts_are_never_moved(tmp_path):
+    """A root intent.md the user edited is their content, not our template."""
+    target = tmp_path / "app"
+    target.mkdir()
+    (target / "intent.md").write_text("# Intent: something the user wrote\n")
+
+    actions = scaffold.plan_migration(target)
+    scaffold.apply_migration(actions, target, use_git=False)
+
+    assert (target / "intent.md").read_text() == "# Intent: something the user wrote\n"
+    assert any(a.kind == "skip" and "modified by you" in a.reason for a in actions)
