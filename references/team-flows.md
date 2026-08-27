@@ -16,7 +16,7 @@ by their position in the chain: `01-intent.md`, `02-spec.md`, `03-plan.md`,
 | Policy owner | `03-org-skills` | Notion, Confluence | Make security, API, brand, and UX rules operational. |
 | QA / Test engineer | `04-continuous-evals` | Playwright, GitHub | Regression-test the agent's configuration. |
 | Tech lead | `05-pr-review` | GitHub, GitLab | Own `REVIEW.md`; read findings and decide. |
-| Release manager | `05-release-gate` | GitHub, Vercel | Authorize production; record it in `05-deploy.md`. |
+| Release manager | `05-release-gate`, `05-integration` | GitHub, Vercel | Authorize promotion; record the flag and ramp in `05-deploy.md`. |
 | Platform engineer | `03-claude-md`, `05-managed-settings`, `05-cicd-integration` | GitHub, GitLab | Agent memory, non-overridable policy, pipeline wiring. |
 | SRE / Service owner | `06-closing-the-loop` | Datadog, PagerDuty, Slack | Define control bands; respond to breaches. |
 | Security lead | `06-security-scan` | Sentry, GitHub, Jira | Own the security skill; route scan findings. |

@@ -8,7 +8,7 @@ A cross-platform implementation of the AI-Native SDLC playbook as
 [Agent Skills](https://agentskills.io), for Claude Code, GitHub Copilot, OpenAI
 Codex, and any other Agent Skills-compatible tool.
 
-It ships as a package: **19 skills**, **artifact templates**, **subagent and
+It ships as a package: **20 skills**, **artifact templates**, **subagent and
 workflow templates**, **MCP client configs**, **governance hooks and managed
 settings**, **eval examples**, an **indicator catalog**, and an `ai-dlc` CLI that
 scaffolds, validates, and measures an AI-DLC project.
@@ -64,7 +64,7 @@ intents/csv-export-20260826/
 
 ## What is in this package
 
-**19 skills** across the six stages plus the cross-cutting plays:
+**20 skills** across the six stages plus the cross-cutting plays:
 
 | Stage | Skills |
 |---|---|
@@ -73,7 +73,7 @@ intents/csv-export-20260826/
 | Design | `02-spec-writer` |
 | Build | `03-plan-mode`, `03-claude-md`, `03-subagents`, `03-parallel-sessions`, `03-org-skills` |
 | Test | `04-feedback-loop`, `04-continuous-evals` |
-| Deploy | `05-pr-review`, `05-release-gate`, `05-cicd-triage`, `05-cicd-integration`, `05-managed-settings` |
+| Deploy | `05-pr-review`, `05-release-gate`, `05-integration`, `05-cicd-triage`, `05-cicd-integration`, `05-managed-settings` |
 | Maintain | `06-closing-the-loop`, `06-security-scan`, `06-on-call` |
 | Cross-cutting | `platform-metrics` |
 
@@ -266,6 +266,10 @@ Three layers, in increasing order of authority — see `governance/README.md`.
 | `no-self-approve.sh` | `gh pr review --approve`, `gh pr merge`, force-push to main | Nothing — a human does it |
 | `detect-bands.sh` | Nothing; it is the deterministic band detector | — |
 
+Promotion from `integration` to `main` is human-only and deliberately absent
+from every workflow template in this package. A gate an agent can satisfy is not
+a gate.
+
 > **`allowed-tools` is not a security control.** Claude Code enforces it; Codex,
 > Copilot, and other Agent Skills clients ignore the field entirely. It is
 > written for least privilege and it is useful, but the gates that actually hold
@@ -279,6 +283,83 @@ allowlist, telemetry. `05-managed-settings` explains what belongs in which layer
 
 Every gate decision is appended to `.ai-dlc/audit.jsonl`, which works with no
 collector and no vendor.
+
+## Getting several intents to production
+
+Once more than one intent lands per day, the constraint stops being review and
+becomes **integration**. Anthropic reports that after code generation was
+automated the bottleneck moved to "packaging releases in ways users can
+understand, and to managing merge queues that are suddenly overwhelmed."
+
+Per-PR CI cannot help with this. It answers *does this intent work against `main`
+as it was when the branch was cut?* — not *do the six intents landing today work
+together?*
+
+```
+intent/csv-export-20260826    ──┐
+intent/rate-limit-20260827    ──┼──▶  integration  ──▶  main  ──▶  production
+intent/audit-log-20260827     ──┘         │                │
+                                          │                └─ promotion: human only
+                                          └─ staging, validated as a set
+```
+
+| Branch | Meaning | Who moves it |
+|---|---|---|
+| `intent/<id>` | One intent, Build through Review. Short-lived. | The engineer's session |
+| `integration` | Accepted but not promoted. Always deployed to staging, validated as a combination. | The merge queue |
+| `main` | What production runs. | **A human, always** |
+
+**Merge is not release.** Intents are not batched into a train. Each one reaches
+production *dark* behind its own feature flag and ramps on its own schedule —
+which is what Anthropic actually describes: most deployments use feature flags,
+with Claude managing "canary traffic, monitoring for issues, and automatically
+ramping a given feature flag up or down."
+
+That buys four things: nothing waits for the slowest intent, blast radius is per
+intent rather than per release, rollback is a flag flip instead of unpicking a
+merge of six, and the human gate sits at the ramp where canary metrics exist
+rather than at the merge where only a diff does.
+
+### Who does what
+
+| Step | Who | What they actually do |
+|---|---|---|
+| Before branching | Engineer | `ai-dlc backlog --collisions`. Two plans naming the same file means sequence them or split the intent. |
+| Merge to `integration` | Engineer, after review approval | Approval moves the intent into the queue. It does not ship it. |
+| Combination is red | **Whoever broke it, immediately** | It blocks every intent behind it, so it is an incident, not a backlog item. |
+| Staging acceptance | Product owner | Ticks the acceptance criteria from `02-spec.md` — they were written at Design to be the test script here. |
+| Promotion to `main` | Release manager | Sets `RELEASE_APPROVAL`. Never the engineer who ran the session, never the agent. |
+| Flag ramp | Flag owner named in `05-deploy.md` | Canary, then widening. Watches the metric the spec said would move. |
+| Queue health | Platform engineer | Publishes depth, deploy lag, and whether integration is green, where the team reads it. |
+
+### The daily rhythm
+
+```bash
+ai-dlc backlog                 # what is in flight, and at which stage
+ai-dlc backlog --collisions    # which in-flight plans claim the same files
+```
+
+1. **Morning:** check the queue and the collisions. A collision found now costs a
+   conversation; found in the merge queue it costs a day.
+2. **Through the day:** approved intents merge to `integration`. Each merge
+   redeploys staging and revalidates the whole combination.
+3. **A red integration branch stops the line.** Nobody merges on top of it. The
+   fix names the offending *combination*, not just the failing test — every PR in
+   it was green on its own.
+4. **Promotion happens when a human decides it should**, not on a schedule.
+   Several intents ride along; they are already independent because each is
+   behind its own flag.
+5. **Ramps run on their own clocks afterwards.** An intent promoted Tuesday may
+   reach 100% on Thursday while another promoted alongside it went to 100% in an
+   hour.
+
+Two limits keep this from degrading. Cap how many intents sit in review at once —
+that is where the queue forms, and `stage-latency` will tell you if it already
+has. And give every flag an expiry with a removal intent, or flags accumulate into
+permanent untested branches in the code.
+
+`05-integration` is the play. `references/integration-branch.md` has the model,
+the rationale, when *not* to run an integration branch, and the sources.
 
 ## Two real flows
 

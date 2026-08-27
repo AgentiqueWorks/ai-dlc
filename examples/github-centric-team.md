@@ -35,12 +35,54 @@ In this model the GitHub repo is the single source of truth for backlog, agent m
 
 ## Branching convention
 
+Start with the simple version and add the middle branch only when you need it.
+
+### One intent at a time
+
 ```
 main
   └── intent/csv-export-20260826
 ```
 
-A single branch per intent keeps the startup lean. The branch accumulates the numbered artifacts in `intents/<id>/` plus the code changes. One PR is opened. A human merges it when the full chain is accepted.
+A single branch per intent keeps a small team lean. The branch carries
+`03-plan.md` plus the code, one PR is opened, and a human merges when the chain
+is accepted. While fewer than one intent lands per day, this is all you need.
+
+Two refinements are worth adopting immediately even here:
+
+- **Land `01-intent.md` and `02-spec.md` on `main` early**, in a small doc-only
+  PR. They are documents and carry no deployment risk. Keeping them on an
+  unmerged branch hides the backlog from everyone else for days, which is how two
+  people end up writing the same intent.
+- **`05-deploy.md` and `06-lessons.md` are written after the merge**, when the
+  intent branch is gone. They land as small direct PRs against the same intent
+  folder.
+
+### Several intents at a time
+
+Once more than one intent lands per day, per-PR CI stops being enough. It tests
+each intent against `main` as it was when the branch was cut — never against the
+other intents landing the same day.
+
+```
+intent/csv-export-20260826  ──┐
+intent/rate-limit-20260827  ──┼──▶  integration  ──▶  main  ──▶  production
+intent/audit-log-20260827   ──┘         │                │
+                                        │                └─ promotion: human only
+                                        └─ staging, validated as a set
+```
+
+Intents merge to `integration`, which is always deployed to staging and validated
+as a **combination** — the full suite, cross-intent contract and schema checks,
+migration ordering. Promotion to `main` is human-only. Each intent then reaches
+production dark behind its own flag and ramps on its own schedule, so six intents
+can promote together and still fail apart.
+
+Run `ai-dlc backlog` to see what is in the queue, and check the `## Files that
+change` lists in the in-flight plans for collisions **before** anyone branches.
+
+The full model, including when an integration branch is not worth its cost, is in
+`references/integration-branch.md`.
 
 ## Daily flow
 

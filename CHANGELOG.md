@@ -1,6 +1,41 @@
 # Changelog
 
-## 0.3.0 (unreleased)
+## 0.4.0 (unreleased)
+
+### Added
+
+- **The integration branch.** `05-integration` and
+  `references/integration-branch.md` cover how several intents converge and reach
+  production: intents merge to `integration`, the combination is validated as a
+  set, promotion to `main` is human-only, and each intent then ramps
+  independently behind its own feature flag. Merge and release are separate
+  events, so intents promote together and still fail apart. The rationale and its
+  sources are documented, including when *not* to run an integration branch —
+  `integration-failure-rate` near zero for a quarter is the retirement signal.
+- `ai-dlc backlog --collisions` — reports in-flight intents whose plans claim the
+  same files, using the `## Files that change` contract. Collisions are cheap to
+  fix before either intent branches and expensive to fix in the merge queue.
+- Four integration indicators: `merge-queue-depth`, `deploy-lag`,
+  `integration-failure-rate`, and `flag-ramp-duration`.
+- `templates/workflows/ai-dlc-integration.yml`, which validates the combination
+  rather than repeating per-PR CI, and deliberately does not automate promotion.
+
+### Changed
+
+- `templates/05-deploy.md` is now a promotion and flag-ramp record — what it
+  promoted with, the flag and its expiry, the ramp table, the rollback mechanism,
+  and deploy lag — rather than a release document.
+- `validate` now checks that documented CLI **flags** exist, not just
+  subcommands. Same defect class, caught at the same point.
+
+### Fixed
+
+- **No skill produced `06-lessons.md`.** It was in the chain, the templates, and
+  the completeness metric, but nothing authored it, so a perfectly executed
+  intent capped at 4/6 and the flagship indicator read broken. `06-closing-the-loop`
+  now writes it, and `05-integration` writes `05-deploy.md`.
+
+## 0.3.0
 
 ### Added
 

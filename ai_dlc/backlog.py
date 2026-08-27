@@ -20,7 +20,7 @@ from typing import List, Optional
 from . import gitio, render
 from .repo import ARTIFACTS, STATUSES, Intent, find_root, load_intents
 
-__all__ = ["BacklogRow", "build", "main"]
+__all__ = ["BacklogRow", "Collision", "build", "collisions", "main"]
 
 EXIT_OK = 0
 EXIT_ENVIRONMENT = 3
@@ -51,6 +51,58 @@ class BacklogRow:
     age_days: Optional[int]
     stale: bool
     next_artifact: Optional[str]
+
+
+@dataclass(frozen=True)
+class Collision:
+    """Two in-flight intents whose plans claim the same file."""
+
+    a: str
+    b: str
+    paths: tuple
+
+
+def collisions(root: Path, use_git: bool = True) -> List[Collision]:
+    """Find in-flight intents whose plans name overlapping files.
+
+    Every ``03-plan.md`` declares its paths under ``## Files that change`` -- the
+    same parse contract ``plan-diff-alignment`` measures against. That makes
+    collisions detectable *before* either intent writes code, which is the only
+    point at which the fix is cheap: sequence them, or split the intent.
+
+    Only intents that have a plan and have not finished are considered; a landed
+    intent cannot collide with anything.
+    """
+    from itertools import combinations
+
+    candidates = []
+    for intent in load_intents(Path(root), use_git=use_git):
+        if not intent.planned_files:
+            continue
+        if (intent.status or "") in _CLOSED:
+            continue
+        candidates.append(intent)
+
+    found: List[Collision] = []
+    for first, second in combinations(candidates, 2):
+        shared = sorted(set(first.planned_files) & set(second.planned_files))
+        if shared:
+            found.append(Collision(a=first.id, b=second.id, paths=tuple(shared)))
+    return found
+
+
+def render_collisions(found: List[Collision], considered: int) -> str:
+    if not found:
+        return (
+            f"No collisions among {considered} in-flight intent(s) with a plan.\n"
+            "Their '## Files that change' lists do not overlap."
+        )
+    rows = [[c.a, c.b, str(len(c.paths)), ", ".join(c.paths[:4]) + (" ..." if len(c.paths) > 4 else "")] for c in found]
+    return (
+        render.table(["INTENT", "COLLIDES WITH", "FILES", "SHARED PATHS"], rows)
+        + f"\n\n{len(found)} collision(s) among {considered} in-flight intent(s)."
+        + "\nSequence these intents or split them. Do not discover this in the merge queue."
+    )
 
 
 def _next_artifact(intent: Intent) -> Optional[str]:
@@ -178,6 +230,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--stale-days", type=int, default=30)
     parser.add_argument("--wide", action="store_true", help="Include title and branch columns")
     parser.add_argument("--no-git", action="store_true", help="Skip git lookups (faster, no branch or age)")
+    parser.add_argument(
+        "--collisions",
+        action="store_true",
+        help="Report in-flight intents whose plans claim the same files",
+    )
     return parser
 
 
@@ -193,6 +250,15 @@ def main(argv: Optional[List[str]] = None) -> int:
         else:
             print(message, file=sys.stderr)
         return EXIT_ENVIRONMENT
+
+    if args.collisions:
+        found = collisions(root, use_git=not args.no_git)
+        considered = len([i for i in load_intents(root, use_git=not args.no_git) if i.planned_files])
+        if args.json:
+            print(json.dumps({"schema": 1, "root": str(root), "collisions": [asdict(c) for c in found]}, indent=2))
+        else:
+            print(render_collisions(found, considered))
+        return EXIT_OK
 
     rows = build(root, stale_days=args.stale_days, use_git=not args.no_git)
     if not rows and not (root / "intents").is_dir():

@@ -42,18 +42,22 @@ downstream works well while it does not.
    are worth reading.
 7. **`05-managed-settings`** — when the rollout leaves one team and rules need to
    hold everywhere.
-8. **`05-cicd-integration`** — once review and gates are established. Automating
+8. **`05-integration`** — the moment more than one intent lands per day. Before
+   that, per-PR CI is enough and an integration branch is pure cost. After it,
+   you are testing each intent against a `main` that no longer reflects what is
+   about to ship alongside it.
+9. **`05-cicd-integration`** — once review and gates are established. Automating
    an immature review loop scales the noise.
-9. **`05-cicd-triage`** — once CI is where failures are diagnosed.
-10. **`03-parallel-sessions`** — only once `CLAUDE.md`, tests, and hooks are
+10. **`05-cicd-triage`** — once CI is where failures are diagnosed.
+11. **`03-parallel-sessions`** — only once `CLAUDE.md`, tests, and hooks are
     mature. Parallelism multiplies whatever your guardrails already do, in both
     directions.
-11. **`platform-metrics`** — as soon as there are intents and plans to measure. Early
+12. **`platform-metrics`** — as soon as there are intents and plans to measure. Early
     numbers with small `n` are still useful for finding the bottleneck stage.
-12. **`06-closing-the-loop`** — last of the maintenance plays, because it needs
+13. **`06-closing-the-loop`** — last of the maintenance plays, because it needs
     the intent format, the review gate, hooks, CI integration, and a rollback
     path all in place.
-13. **`06-security-scan`**, **`06-on-call`** — after the loop closes, using the
+14. **`06-security-scan`**, **`06-on-call`** — after the loop closes, using the
     same gates and the same intent format.
 
 ## Signals you moved too fast
@@ -65,6 +69,8 @@ downstream works well while it does not.
 | Plans and diffs disagree constantly | `02-spec-writer` — planning from an unclear spec |
 | Parallel sessions collide | Overlapping `## Files that change`; sequence them |
 | A gate everybody works around | `hook-wait-time` — see `observability.md` |
+| Merges are green but `main` keeps breaking | `05-integration` — nothing tests the combination |
+| Rollback means reverting other people's work too | Shipping without feature flags; see `integration-branch.md` |
 | Evals pass while incidents repeat | Evals written from imagination, not from incidents |
 
 ## Signals you are ready for the next one

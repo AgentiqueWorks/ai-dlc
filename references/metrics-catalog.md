@@ -62,6 +62,10 @@ never guesses from the commit alone.
 | `eval-pass-rate` | Test | leading | Eval run history |
 | `regressions-caught-in-ci` | Test | lagging | CI + incident tracker |
 | `pr-review-time` | Deploy | lagging | PR API |
+| `merge-queue-depth` | Deploy | leading | Forge merge-queue API |
+| `deploy-lag` | Deploy | leading | Deployment history: integration merge to production |
+| `integration-failure-rate` | Deploy | lagging | CI history on the integration branch |
+| `flag-ramp-duration` | Deploy | leading | Feature flag service: dark ship to 100% |
 | `hook-wait-time` | Deploy | leading | OpenTelemetry — see `observability.md` |
 | `gate-violations` | Deploy | lagging | Incident tracker, before/after each gate |
 | `change-failure-rate` | Deploy | lagging | Incident tracker (DORA) |
@@ -88,6 +92,8 @@ never guesses from the commit alone.
 | `intent-survival` | `intent-staleness` | Capture is outrunning triage |
 | `eval-pass-rate` | `repeat-incidents` | The evals test the wrong things |
 | `concurrent-sessions` | `pr-review-time` | Parallelism has moved the bottleneck to review |
+| `merge-queue-depth` | `deploy-lag` | The bottleneck has moved past review to integration |
+| `flag-ramp-duration` | `merge-queue-depth` | Flags are accumulating faster than they are retired |
 
 ## Rules for reporting
 
@@ -98,6 +104,25 @@ never guesses from the commit alone.
 3. Report `n` alongside every median. A median of two samples is an anecdote.
 4. An indicator that changes no file changed nothing. `templates/metrics.md` ends
    with a decision table for exactly this reason.
+
+## The integration indicators
+
+These four exist because of where the bottleneck goes once review stops being the
+constraint. Anthropic reports that after code generation was automated, the
+constraint moved to "packaging releases in ways users can understand, and to
+managing merge queues that are suddenly overwhelmed," and runs a `ci-weather`
+agent that publishes "build metrics, merge queue stats, and deploy lag" to a
+channel anyone can read.
+
+`integration-failure-rate` is the load-bearing one: it counts how often the
+combination is red while every individual PR was green. That number is the entire
+justification for maintaining an integration branch, and if it sits near zero for
+a quarter it is also the signal to retire it. See
+`references/integration-branch.md`.
+
+`deploy-lag` is the one teams most often lack, because PR metrics stop at merge.
+Splitting it into wait-for-authorization versus ramp time usually shows the delay
+is a human queue, not a technical one.
 
 ## Thresholds
 

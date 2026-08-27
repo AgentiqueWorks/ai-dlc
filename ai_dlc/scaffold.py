@@ -20,7 +20,17 @@ from typing import Dict, List, Optional
 
 from . import gitio
 
-__all__ = ["LAYOUT_VERSION", "Action", "detect_layout", "scaffold", "plan_migration", "apply_migration", "main"]
+__all__ = [
+    "LAYOUT_VERSION",
+    "Action",
+    "detect_layout",
+    "scaffold",
+    "plan_migration",
+    "apply_migration",
+    "build_init_parser",
+    "build_migrate_parser",
+    "main",
+]
 
 PACKAGE_ROOT = Path(__file__).resolve().parent.parent
 LAYOUT_VERSION = 2
@@ -359,12 +369,16 @@ def main(argv: Optional[List[str]] = None) -> int:
     return 0
 
 
-def migrate_main(argv: Optional[List[str]] = None) -> int:
+def build_migrate_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ai-dlc migrate", description="Move a project to the current AI-DLC layout")
     parser.add_argument("path", nargs="?", default=".", help="Project to migrate")
     parser.add_argument("--apply", action="store_true", help="Perform the moves (default is a dry run)")
     parser.add_argument("--force", action="store_true", help="Migrate even with a dirty working tree")
-    args = parser.parse_args(argv)
+    return parser
+
+
+def migrate_main(argv: Optional[List[str]] = None) -> int:
+    args = build_migrate_parser().parse_args(argv)
 
     target = Path(args.path).expanduser().resolve()
     layout = detect_layout(target)
