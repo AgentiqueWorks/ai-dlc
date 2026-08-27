@@ -320,6 +320,44 @@ intent rather than per release, rollback is a flag flip instead of unpicking a
 merge of six, and the human gate sits at the ramp where canary metrics exist
 rather than at the merge where only a diff does.
 
+### Who does what
+
+| Step | Who | What they actually do |
+|---|---|---|
+| Before branching | Engineer | `ai-dlc backlog --collisions`. Two plans naming the same file means sequence them or split the intent. |
+| Merge to `integration` | Engineer, after review approval | Approval moves the intent into the queue. It does not ship it. |
+| Combination is red | **Whoever broke it, immediately** | It blocks every intent behind it, so it is an incident, not a backlog item. |
+| Staging acceptance | Product owner | Ticks the acceptance criteria from `02-spec.md` — they were written at Design to be the test script here. |
+| Promotion to `main` | Release manager | Sets `RELEASE_APPROVAL`. Never the engineer who ran the session, never the agent. |
+| Flag ramp | Flag owner named in `05-deploy.md` | Canary, then widening. Watches the metric the spec said would move. |
+| Queue health | Platform engineer | Publishes depth, deploy lag, and whether integration is green, where the team reads it. |
+
+### The daily rhythm
+
+```bash
+ai-dlc backlog                 # what is in flight, and at which stage
+ai-dlc backlog --collisions    # which in-flight plans claim the same files
+```
+
+1. **Morning:** check the queue and the collisions. A collision found now costs a
+   conversation; found in the merge queue it costs a day.
+2. **Through the day:** approved intents merge to `integration`. Each merge
+   redeploys staging and revalidates the whole combination.
+3. **A red integration branch stops the line.** Nobody merges on top of it. The
+   fix names the offending *combination*, not just the failing test — every PR in
+   it was green on its own.
+4. **Promotion happens when a human decides it should**, not on a schedule.
+   Several intents ride along; they are already independent because each is
+   behind its own flag.
+5. **Ramps run on their own clocks afterwards.** An intent promoted Tuesday may
+   reach 100% on Thursday while another promoted alongside it went to 100% in an
+   hour.
+
+Two limits keep this from degrading. Cap how many intents sit in review at once —
+that is where the queue forms, and `stage-latency` will tell you if it already
+has. And give every flag an expiry with a removal intent, or flags accumulate into
+permanent untested branches in the code.
+
 `05-integration` is the play. `references/integration-branch.md` has the model,
 the rationale, when *not* to run an integration branch, and the sources.
 
