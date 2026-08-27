@@ -44,4 +44,24 @@ Agent writes `plan.md`:
 **Tech lead**: `/05-pr-review`  
 Agent finds: "Important: the CSV endpoint does not validate input." The engineer fixes it; the lead merges.
 
-**SRE**: Deployment is verified via `vercel` and `sentry` MCP. `06-closing-the-loop` watches for spikes.
+**Release manager**: `/05-release-gate`
+`production-gate.sh` holds the deploy until `RELEASE_APPROVAL` is set. The
+authorization, the staged rollout, and the rollback trigger go into
+`05-deploy.md`.
+
+**SRE**: Deployment is verified via the `vercel` and `sentry` MCP servers.
+`06-closing-the-loop` watches the control bands in `bands.yaml`.
+
+**The loop closes.** `06-lessons.md` records what changed in the agent's
+configuration, not just what was learned: the missing input validation became a
+rule in the security skill, and the streaming requirement became a line in
+`CLAUDE.md` and a regression eval. The next intent starts with both already in
+place.
+
+See the complete chain in `examples/intents/csv-export-20260826/`, and measure it
+with:
+
+```bash
+ai-dlc backlog
+ai-dlc metrics --intent csv-export-20260826
+```

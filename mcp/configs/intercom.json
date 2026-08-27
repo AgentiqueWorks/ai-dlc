@@ -1,9 +1,12 @@
 {
   "mcpServers": {
     "intercom": {
-      "type": "command",
+      "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@vineethnkrishnan/intercom-mcp"],
+      "args": [
+        "-y",
+        "@vineethnkrishnan/intercom-mcp"
+      ],
       "env": {
         "INTERCOM_ACCESS_TOKEN": "${INTERCOM_TOKEN}"
       }

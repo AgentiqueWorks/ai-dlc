@@ -1,7 +1,7 @@
 # Plan: CSV export for reports
 
 - **From spec:** `02-spec.md`
-- **Status:** implemented
+- **Status:** done
 
 ## Files that change
 

@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "_comment": [
+    "Managed settings: administrator-controlled policy that engineers cannot override.",
+    "Deploy to /Library/Application Support/ClaudeCode/managed-settings.json (macOS),",
+    "/etc/claude-code/managed-settings.json (Linux), or",
+    "C:\\ProgramData\\ClaudeCode\\managed-settings.json (Windows) via MDM.",
+    "Everything here wins over project and user settings. Keep it to the rules that",
+    "must hold everywhere: credentials, destructive operations, and separation of",
+    "duties. Project-specific gates belong in governance/settings.json instead."
+  ],
+  "permissions": {
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./secrets/**)",
+      "Read(./**/*.pem)",
+      "Read(./**/id_rsa*)",
+      "Read(//Users/*/.aws/**)",
+      "Read(//Users/*/.ssh/**)",
+      "Bash(gh pr review --approve:*)",
+      "Bash(gh pr merge:*)",
+      "Bash(git push --force:*)",
+      "Bash(rm -rf /:*)",
+      "Bash(aws iam:*)",
+      "Bash(kubectl delete:*)"
+    ],
+    "additionalDirectories": []
+  },
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true,
+    "network": {
+      "allowUnixSockets": false,
+      "allowedDomains": [
+        "api.anthropic.com",
+        "github.com",
+        "api.github.com"
+      ]
+    }
+  },
+  "enableAllProjectMcpServers": false,
+  "enabledPlugins": {},
+  "env": {
+    "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
+    "OTEL_METRICS_EXPORTER": "otlp",
+    "OTEL_LOGS_EXPORTER": "otlp",
+    "OTEL_EXPORTER_OTLP_PROTOCOL": "http/protobuf",
+    "OTEL_EXPORTER_OTLP_ENDPOINT": "https://otel-collector.internal:4318"
+  }
+}

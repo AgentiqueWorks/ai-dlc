@@ -1,0 +1,42 @@
+# Close the loop. A deterministic detector decides whether a band was breached;
+# only then is an agent invoked, with the tools that band allows.
+name: ai-dlc control bands
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Detect band breaches
+        id: detect
+        env:
+          DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
+          DATADOG_APP_KEY: ${{ secrets.DATADOG_APP_KEY }}
+        run: ./.claude/hooks/detect-bands.sh --config bands.yaml --output breach.json
+
+      - name: Respond within the band
+        if: steps.detect.outputs.tier == '3sigma'
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Use the 06-closing-the-loop skill.
+
+            A 3-sigma band breach was detected. Read breach.json, diagnose it,
+            and take exactly one of the routes bands.yaml allows for this metric:
+            a bounded-fix pull request, the rollback runbook, or a new
+            intents/<id>/01-intent.md. If your confidence is below the gate in
+            bands.yaml, escalate instead of proposing.
+          claude_args: |
+            --allowed-tools "Read,Grep,Glob,Write,Edit,Bash(git *),Bash(gh pr create *),Bash(gh issue create *)"

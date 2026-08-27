@@ -1,0 +1,42 @@
+# Validate the agent configuration itself: skills, hooks, MCP configs, and the
+# artifact chain. Configuration steers the agent, so it gets the same treatment
+# as code.
+name: ai-dlc validate
+
+on:
+  pull_request:
+    paths:
+      - "CLAUDE.md"
+      - "AGENTS.md"
+      - ".claude/**"
+      - ".agents/**"
+      - "intents/**"
+      - "evals/**"
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # ai-dlc metrics reads history; a depth-1 clone silently produces
+          # wrong numbers, so fetch everything.
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install ai-dlc
+        run: pip install ai-dlc
+
+      - name: Validate the artifact chain
+        run: ai-dlc validate .
+
+      - name: Backlog
+        run: ai-dlc backlog .
+
+      - name: Delivery indicators
+        run: ai-dlc metrics . --markdown >> "$GITHUB_STEP_SUMMARY"

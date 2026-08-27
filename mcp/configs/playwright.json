@@ -1,9 +1,12 @@
 {
   "mcpServers": {
     "playwright": {
-      "type": "command",
+      "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@anthropic-ai/playwright-mcp"]
+      "args": [
+        "-y",
+        "@anthropic-ai/playwright-mcp"
+      ]
     }
   }
 }

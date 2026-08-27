@@ -1,0 +1,257 @@
+# Machine-readable catalog of the AI-Native SDLC indicators.
+#
+# `computable` declares how far this repo can go on its own:
+#   git-free    - derived from the intents/ tree alone
+#   git         - derived from local git history
+#   conditional - computable only when the artifact carries an extra field
+#   external    - needs an API this package does not talk to (documented only)
+#
+# `ai-dlc metrics` implements every indicator that is not `external`.
+# `scripts/validate.py` enforces that the registry and this file agree, and that
+# every `metadata.indicators` entry in a SKILL.md names an indicator listed here.
+
+version: 1
+
+indicators:
+  artifact-chain-completeness:
+    stage: "00-onboarding"
+    type: leading
+    computable: git-free
+    unit: ratio
+    title: "Artifact chain completeness"
+    source: "Which of 01-intent.md .. 06-lessons.md exist under intents/<id>/"
+    reading: "A chain that stops at 01 for weeks is a backlog item nobody picked up."
+
+  time-to-intent:
+    stage: "01-plan"
+    type: leading
+    computable: conditional
+    unit: duration
+    title: "Time from signal to intent.md"
+    requires_field: "01-intent.md: '- **Signal at:** <ISO8601>'"
+    source: "Signal at field vs. the commit that first added 01-intent.md"
+    reading: "The playbook expects hours, against multi-week elicitation cycles."
+
+  intent-survival:
+    stage: "01-plan"
+    type: lagging
+    computable: git
+    unit: ratio
+    approximate: true
+    title: "intent.md survival rate"
+    source: "Intents whose 01-intent.md reached the default branch vs. those still on an unmerged branch"
+    reading: "Low survival means intents are being captured faster than they are being triaged."
+    caveat: "Invisible when branches are squash-merged and deleted without landing intents/."
+
+  intent-staleness:
+    stage: "01-plan"
+    type: leading
+    computable: git
+    unit: count
+    title: "Stale intents"
+    source: "Days since the last commit touching intents/<id>/"
+    reading: "A growing stale count is the queue backing up behind the humans at the gates."
+
+  stage-latency:
+    stage: "02-design"
+    type: leading
+    computable: git
+    unit: duration
+    title: "Stage-to-stage latency"
+    source: "First-add commit timestamps between consecutive artifacts in one intent"
+    reading: "intent->spec and spec->plan are the two the playbook calls out by name."
+
+  spec-churn:
+    stage: "02-design"
+    type: lagging
+    computable: git
+    unit: count
+    title: "Spec changes after the plan was committed"
+    source: "Commits touching 02-spec.md after 03-plan.md was first added"
+    reading: "Requirements instability; the playbook's 'post-intent.md spec changes'."
+
+  plan-diff-alignment:
+    stage: "03-build"
+    type: lagging
+    computable: git
+    unit: ratio
+    title: "Plan-to-diff alignment"
+    source: "Files listed under '## Files that change' in 03-plan.md vs. git diff on intent/<id>"
+    reading: "The strongest local signal for scope creep and plan fidelity."
+
+  rework-after-review:
+    stage: "04-test"
+    type: lagging
+    computable: git
+    unit: count
+    title: "Rework commits after first review"
+    source: "Commits on intent/<id> after 04-review.md was first added"
+    reading: "Local proxy for the playbook's 'rework cycles per change', which needs PR metadata."
+
+  first-pass-implementation:
+    stage: "03-build"
+    type: leading
+    computable: external
+    unit: ratio
+    title: "First-pass implementation rate"
+    needs: "PR API - share of changes merged from the first implementation pass"
+
+  ci-first-pass-rate:
+    stage: "04-test"
+    type: leading
+    computable: external
+    unit: ratio
+    title: "CI test pass rate, first pass"
+    needs: "CI API - pass rate of agent-authored changes on their first run"
+
+  eval-pass-rate:
+    stage: "04-test"
+    type: leading
+    computable: external
+    unit: ratio
+    title: "Eval suite pass rate"
+    needs: "Eval run history; gate configuration changes on the trend"
+
+  regressions-caught-in-ci:
+    stage: "04-test"
+    type: lagging
+    computable: external
+    unit: ratio
+    title: "Regressions caught in CI vs. found in production"
+    needs: "Incident tracker plus CI history"
+
+  pr-review-time:
+    stage: "05-deploy"
+    type: lagging
+    computable: external
+    unit: duration
+    title: "PR review time"
+    needs: "PR API - should fall once tests catch mechanical errors"
+
+  hook-wait-time:
+    stage: "05-deploy"
+    type: leading
+    computable: external
+    unit: duration
+    title: "Hook wait time per gate"
+    needs: "OpenTelemetry export from the agent; see references/observability.md"
+
+  gate-violations:
+    stage: "05-deploy"
+    type: lagging
+    computable: external
+    unit: count
+    title: "Gate violations reaching production"
+    needs: "Incident tracker, before and after hooks were deployed"
+
+  change-failure-rate:
+    stage: "05-deploy"
+    type: lagging
+    computable: external
+    unit: ratio
+    title: "Change failure rate"
+    needs: "Incident tracker (a DORA metric)"
+
+  dora:
+    stage: "05-deploy"
+    type: lagging
+    computable: external
+    unit: composite
+    title: "DORA metrics"
+    needs: "Deployment frequency, lead time, change failure rate, MTTR"
+
+  band-breach-to-intent:
+    stage: "06-maintain"
+    type: leading
+    computable: external
+    unit: duration
+    title: "Band breach to intent.md"
+    needs: "Detection timestamp from the bands detector vs. the triage queue"
+
+  findings-to-fixes:
+    stage: "06-maintain"
+    type: lagging
+    computable: external
+    unit: ratio
+    title: "Findings to merged fixes"
+    needs: "Triage queue vs. PR history"
+
+  repeat-incidents:
+    stage: "06-maintain"
+    type: lagging
+    computable: external
+    unit: count
+    title: "Repeat incidents in the same class"
+    needs: "Incident tracker; should fall as evals are added after each incident"
+
+  scan-coverage:
+    stage: "06-maintain"
+    type: leading
+    computable: external
+    unit: ratio
+    title: "Repositories on a scan schedule"
+    needs: "Security scanning service inventory"
+
+  finding-to-patch-time:
+    stage: "06-maintain"
+    type: leading
+    computable: external
+    unit: duration
+    title: "Finding to patch PR"
+    needs: "Scan history plus PR metadata"
+
+  vulns-in-prod-vs-scan:
+    stage: "06-maintain"
+    type: lagging
+    computable: external
+    unit: ratio
+    title: "Vulnerabilities in production vs. found by scan"
+    needs: "Incident tracker comparison"
+
+  findings-per-scan:
+    stage: "06-maintain"
+    type: lagging
+    computable: external
+    unit: count
+    title: "Findings per scan on repeated repositories"
+    needs: "Scan history trend; should fall as fixes and evals land"
+
+  concurrent-sessions:
+    stage: "platform"
+    type: leading
+    computable: external
+    unit: count
+    title: "Concurrent sessions per engineer"
+    needs: "OpenTelemetry export, held against review quality"
+
+  changes-per-engineer:
+    stage: "platform"
+    type: lagging
+    computable: external
+    unit: count
+    title: "Changes merged per engineer per week"
+    needs: "PR history, read alongside the rework rate"
+
+  onboarding-first-pr:
+    stage: "platform"
+    type: lagging
+    computable: external
+    unit: duration
+    title: "Time to first merged PR for a new team member"
+    needs: "PR history timestamps"
+
+  skill-merge-time:
+    stage: "platform"
+    type: leading
+    computable: external
+    unit: duration
+    title: "Time to merge an updated skill"
+    needs: "PR history, measured from policy-owner approval"
+
+  policy-cite-findings:
+    stage: "platform"
+    type: lagging
+    computable: external
+    unit: count
+    title: "PR findings that cite a policy"
+    needs: "Review findings; should fall toward zero once a skill applies the policy"

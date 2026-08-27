@@ -1,0 +1,5 @@
+{
+  "name": "intent-capture-chain-and-signal",
+  "prompt": "A customer wrote in Intercom at 2026-09-01T08:15:00Z asking for a dark mode toggle. Use the 01-intent-capture skill to capture this as an intent. Do not write any code.",
+  "check": "evals/example-intent-capture-check.sh"
+}

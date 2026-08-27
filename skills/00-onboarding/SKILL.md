@@ -1,6 +1,19 @@
 ---
 name: 00-onboarding
 description: Help a new user or team pick the right first skill and understand the AI-Native SDLC artifact chain. Use on day one or when introducing the system.
+allowed-tools:
+  - Read
+  - Glob
+  - Grep
+  - Bash(ai-dlc:*)
+metadata:
+  stage: "00-onboarding"
+  persona: "pm, product-owner, designer, engineer, tech-lead, qa, release-manager, sre, security, platform"
+  requires: ""
+  produces: ""
+  indicators: "artifact-chain-completeness"
+  mcp: ""
+  maturity: "stable"
 ---
 
 # Onboarding
@@ -36,3 +49,13 @@ Orient a team member and point them to the right first skill.
 - A one-paragraph recommendation for the user's role.
 - The exact command to run their first skill.
 - A link to `references/team-flows.md` and `examples/github-centric-team.md` for detailed examples.
+
+## Measure
+
+| Indicator | Type | Where it comes from |
+|---|---|---|
+| `artifact-chain-completeness` | leading | `ai-dlc metrics` |
+
+Run `ai-dlc adoption` to see which plays you can start today and which are waiting on a prerequisite.
+
+See `references/metrics-catalog.md` for the full indicator set.

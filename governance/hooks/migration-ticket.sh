@@ -1,18 +1,37 @@
 #!/usr/bin/env bash
-# Blocks edits to migration/schema/infra files without a change ticket.
+# Schema, migration, and infrastructure changes need a change ticket. This is a
+# deterministic gate, not a judgement call: the agent cannot argue with it.
 
 set -euo pipefail
+source "$(dirname "${BASH_SOURCE[0]}")/_lib.sh"
+read_payload
 
-tool=$(jq -r '.tool_name' < /dev/stdin 2>/dev/null || echo "")
-input=$(jq -r '.tool_input.path // .tool_input.old_string // ""' < /dev/stdin 2>/dev/null || echo "")
+needs_ticket=0
 
-if [ "$tool" = "Edit" ] || [ "$tool" = "Bash" ]; then
-  if [[ "$input" == *"migrations/"* || "$input" == *"schema"* || "$input" == *"infra/"* ]]; then
-    if [ -z "${CHANGE_TICKET:-}" ]; then
-      echo "Edits to migrations, schema, or infra require CHANGE_TICKET." >&2
-      exit 2
-    fi
-  fi
+while IFS= read -r path; do
+  [ -n "$path" ] || continue
+  case "$path" in
+    *migrations/*|*migration/*|*schema*|*infra/*|*terraform/*|*.tf|*helm/*|*k8s/*)
+      needs_ticket=1
+      target="$path"
+      ;;
+  esac
+done <<< "$(target_paths)"
+
+cmd="$(command_string)"
+case "$cmd" in
+  *"migrate"*|*"terraform apply"*|*"kubectl apply"*|*"alembic upgrade"*)
+    needs_ticket=1
+    target="$cmd"
+    ;;
+esac
+
+if [ "$needs_ticket" = "1" ] && [ -z "${CHANGE_TICKET:-}" ]; then
+  deny \
+    "Blocked: ${target:-this change} touches schema, migrations, or infrastructure." \
+    "Set CHANGE_TICKET to the approved change-record id before retrying." \
+    "Record the ticket in intents/<id>/05-deploy.md under Gate."
 fi
 
+audit "allow" "${target:-no migration target}"
 exit 0

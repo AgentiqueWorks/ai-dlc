@@ -1,9 +1,12 @@
 {
   "mcpServers": {
     "gitlab": {
-      "type": "command",
+      "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@yoda-digital/mcp-gitlab-server"],
+      "args": [
+        "-y",
+        "@yoda-digital/mcp-gitlab-server"
+      ],
       "env": {
         "GITLAB_TOKEN": "${GITLAB_TOKEN}",
         "GITLAB_URL": "${GITLAB_URL:-https://gitlab.com}"

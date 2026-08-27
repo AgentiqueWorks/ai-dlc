@@ -1,18 +1,58 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
+    "defaultMode": "acceptEdits",
     "deny": [
-      "Read(.env*)",
+      "Read(./.env)",
+      "Read(./.env.*)",
       "Read(./secrets/**)",
-      "WebFetch",
-      "Bash(curl *)",
-      "Bash(wget *)"
+      "Read(./**/*.pem)",
+      "Read(./**/id_rsa*)",
+      "Bash(curl:*)",
+      "Bash(wget:*)",
+      "Bash(git push --force:*)",
+      "Bash(gh pr merge:*)",
+      "Bash(gh pr review --approve:*)"
+    ],
+    "ask": [
+      "Bash(git push:*)",
+      "Bash(gh pr create:*)",
+      "Bash(npm publish:*)",
+      "Write(./.claude/settings.json)",
+      "Write(./.claude/hooks/**)",
+      "Edit(./.claude/hooks/**)"
     ],
     "allow": [
-      "Bash(git *)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git switch:*)",
+      "Bash(git worktree:*)",
       "Bash(make build)",
       "Bash(make test)",
-      "Bash(make lint)"
+      "Bash(make lint)",
+      "Bash(ai-dlc:*)",
+      "Read(./intents/**)",
+      "Write(./intents/**)",
+      "Edit(./intents/**)"
     ]
+  },
+  "sandbox": {
+    "enabled": true,
+    "network": {
+      "allowUnixSockets": true,
+      "allowedDomains": [
+        "api.anthropic.com",
+        "github.com",
+        "api.github.com",
+        "registry.npmjs.org",
+        "pypi.org",
+        "files.pythonhosted.org"
+      ]
+    },
+    "excludedCommands": ["docker", "podman"]
   },
   "hooks": {
     "PreToolUse": [
@@ -20,15 +60,22 @@
         "matcher": "Bash",
         "hooks": [
           { "type": "command", "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/production-gate.sh" },
-          { "type": "command", "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/migration-ticket.sh" }
+          { "type": "command", "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/migration-ticket.sh" },
+          { "type": "command", "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/no-self-approve.sh" }
         ]
       },
       {
-        "matcher": "Edit",
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit",
         "hooks": [
-          { "type": "command", "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/block-test-edit.sh" }
+          { "type": "command", "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/block-test-edit.sh" },
+          { "type": "command", "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/migration-ticket.sh" }
         ]
       }
     ]
+  },
+  "env": {
+    "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
+    "OTEL_METRICS_EXPORTER": "otlp",
+    "OTEL_LOGS_EXPORTER": "otlp"
   }
 }

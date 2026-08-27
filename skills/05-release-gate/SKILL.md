@@ -1,6 +1,22 @@
 ---
 name: 05-release-gate
 description: Encode human approval gates as deterministic hooks that run before the agent can act on sensitive operations. Use for release, migration, and protected-path gating.
+allowed-tools:
+  - Read
+  - Glob
+  - Grep
+  - Write
+  - Edit
+  - Bash(chmod:*)
+  - Bash(bash:*)
+metadata:
+  stage: "05-deploy"
+  persona: "release-manager, platform, tech-lead"
+  requires: ""
+  produces: ".claude/settings.json, .claude/hooks/"
+  indicators: "hook-wait-time, gate-violations"
+  mcp: "github, vercel"
+  maturity: "stable"
 ---
 
 # Release gate
@@ -33,3 +49,14 @@ Make approval gates enforceable at the moment the agent tries to act.
 
 - Hook scripts and `settings.json` snippets.
 - Clear error messages when a gate is triggered.
+
+## Measure
+
+| Indicator | Type | Where it comes from |
+|---|---|---|
+| `hook-wait-time` | leading | an external system |
+| `gate-violations` | lagging | an external system |
+
+Measure `gate-violations` before and after each gate ships. A gate that never fires is either perfect or wrong; check which.
+
+See `references/metrics-catalog.md` for the full indicator set.
