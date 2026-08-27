@@ -1,7 +1,63 @@
-metric: <metric-name>
-baseline: rolling_30d
-rules: western_electric
-tiers:
-  1sigma: { action: log }
-  2sigma: { action: diagnose, tools: "Read,Grep,Bash(gh run view *)" }
-  3sigma: { action: propose, routes: [pull_request, runbook:rollback-deploy] }
+# Control bands: deterministic detection, scoped response.
+#
+# The detector is a version-controlled script, not a model. It computes the
+# statistic, decides which band was breached, and only then invokes an agent —
+# with the tools that band allows and nothing more.
+#
+# Run `governance/detect-bands.sh --config bands.yaml` from cron or CI.
+
+version: 1
+
+defaults:
+  baseline: rolling_30d
+  rules: western_electric
+  min_samples: 30
+  cooldown_minutes: 60
+
+metrics:
+  - name: checkout-error-rate
+    query: "sum:trace.http.request.errors{service:checkout}.as_rate()"
+    source: datadog
+    direction: higher_is_worse
+    owner: checkout-team
+    tiers:
+      1sigma:
+        action: log
+        note: "Record only. No agent is invoked."
+      2sigma:
+        action: diagnose
+        allowed_tools: "Read, Grep, Glob, Bash(gh run view *), mcp__datadog__query_metrics"
+        writes: false
+        output: "a diagnosis comment on the on-call thread"
+      3sigma:
+        action: propose
+        allowed_tools: "Read, Grep, Glob, Write, Edit, Bash(git *), Bash(gh pr create *)"
+        confidence_gate: 0.8
+        routes:
+          - pull_request
+          - runbook:rollback-deploy
+          - intent
+        output: "intents/<new-id>/01-intent.md, or a bounded-fix PR"
+
+  - name: checkout-p99-latency
+    query: "p99:trace.http.request.duration{service:checkout}"
+    source: datadog
+    direction: higher_is_worse
+    owner: checkout-team
+    tiers:
+      1sigma:
+        action: log
+      2sigma:
+        action: diagnose
+        writes: false
+      3sigma:
+        action: propose
+        confidence_gate: 0.8
+        routes:
+          - intent
+
+escalation:
+  # Below the confidence gate the agent must not propose a fix; it escalates.
+  below_confidence: page_owner
+  repeated_breaches: 3
+  on_repeat: escalate_to_service_owner

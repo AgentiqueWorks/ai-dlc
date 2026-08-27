@@ -1,6 +1,27 @@
 ---
 name: 06-on-call
 description: Triage incidents arriving via Slack, Jira, or other channels, verify metrics over MCP, and write post-mortems or PRs. Use for first-response and on-call automation.
+allowed-tools:
+  - Read
+  - Glob
+  - Grep
+  - Write
+  - Edit
+  - Bash(git status:*)
+  - Bash(git diff:*)
+  - Bash(git log:*)
+  - Bash(git add:*)
+  - Bash(git commit:*)
+  - Bash(git switch:*)
+  - Bash(gh pr create:*)
+metadata:
+  stage: "06-maintain"
+  persona: "sre, engineer, service-owner"
+  requires: "01-intent-capture, 05-pr-review"
+  produces: "lessons/<incident-id>.md, intents/<id>/01-intent.md"
+  indicators: "repeat-incidents, band-breach-to-intent"
+  mcp: "slack, jira, datadog, sentry, pagerduty"
+  maturity: "stable"
 ---
 
 # On-call
@@ -36,3 +57,13 @@ Be a first responder to incidents that arrive through workplace communication to
 - Acknowledgement and status updates in the source channel/ticket.
 - A PR or `intent.md`.
 - A post-mortem.
+
+## Measure
+
+| Indicator | Type | Where it comes from |
+|---|---|---|
+| `repeat-incidents` | lagging | an external system |
+
+Every post-mortem should name the file that changed — a skill, a hook, an eval — not just the lesson.
+
+See `references/metrics-catalog.md` for the full indicator set.

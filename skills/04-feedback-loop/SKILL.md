@@ -1,6 +1,28 @@
 ---
 name: 04-feedback-loop
 description: Verify an agent's work before reporting it done using build, test, lint, and visual checks. Use during implementation in the Build and Test stages.
+allowed-tools:
+  - Read
+  - Glob
+  - Grep
+  - Write
+  - Edit
+  - Bash(make:*)
+  - Bash(npm test:*)
+  - Bash(npm run:*)
+  - Bash(pytest:*)
+  - Bash(cargo test:*)
+  - Bash(go test:*)
+  - mcp__playwright__browser_navigate
+  - mcp__playwright__browser_take_screenshot
+metadata:
+  stage: "04-test"
+  persona: "engineer, qa"
+  requires: "03-claude-md"
+  produces: ""
+  indicators: "ci-first-pass-rate"
+  mcp: "playwright, github"
+  maturity: "stable"
 ---
 
 # Feedback loop
@@ -37,3 +59,13 @@ Make the agent prove its work before a human reviews it.
 
 - Pasted build/test/lint output or screenshot evidence.
 - A green check and a summary of what was verified.
+
+## Measure
+
+| Indicator | Type | Where it comes from |
+|---|---|---|
+| `ci-first-pass-rate` | leading | an external system |
+
+This is the play that moves `ci-first-pass-rate`. If it is not moving, the session is claiming done without running the commands.
+
+See `references/metrics-catalog.md` for the full indicator set.

@@ -1,9 +1,12 @@
 {
   "mcpServers": {
     "datadog": {
-      "type": "command",
+      "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@vineethnkrishnan/datadog-mcp"],
+      "args": [
+        "-y",
+        "@vineethnkrishnan/datadog-mcp"
+      ],
       "env": {
         "DD_API_KEY": "${DATADOG_API_KEY}",
         "DD_APP_KEY": "${DATADOG_APP_KEY}",

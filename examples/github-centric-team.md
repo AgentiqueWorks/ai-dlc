@@ -79,30 +79,63 @@ The agent writes `03-plan.md` and then implements the code on the same branch. `
 /05-pr-review
 ```
 
-The agent loads `04-review.md`, the diff, and the spec/plan. It tags findings. The tech lead adds a human review, then merges to `main`.
+The agent loads the diff, `REVIEW.md`, `02-spec.md`, and `03-plan.md`, runs the bug, security, and compliance passes, and writes its findings to `04-review.md`. It cannot approve or merge — `no-self-approve.sh` blocks that, and branch protection requires a human. The tech lead reviews the findings and merges to `main`.
 
-### 5. Deploy and maintain
+### 5. Deploy
 
-After merge, `06-closing-the-loop` watches Datadog/Sentry. Any anomaly writes a new `intents/<id>/01-intent.md` and starts the loop again.
+```text
+/05-release-gate
+```
+
+`production-gate.sh` blocks the deploy until a release manager sets
+`RELEASE_APPROVAL`. The authorization, the rollout steps, and the rollback
+trigger are recorded in `05-deploy.md` — the record, never the token value.
+
+### 6. Maintain and close the loop
+
+After deploy, `06-closing-the-loop` watches Datadog and Sentry against
+`bands.yaml`. Detection is deterministic: `detect-bands.sh` computes the
+statistic and decides the tier, and only a 3-sigma breach invokes an agent, with
+the tools that tier allows. A finding writes `06-lessons.md` — naming the file
+that changed, a skill, a hook, or an eval — and a new
+`intents/<new-id>/01-intent.md`, which starts the loop again.
 
 ## Backlog as a repo view
 
-To see what is open, the agent can:
-
-```text
-List all intent files where status is not "done".
-```
-
-Or the team runs:
+The repository is the backlog, so reading it is a command rather than a query:
 
 ```bash
-ai-dlc backlog
+ai-dlc backlog --wide
 ```
+
+```
+ID                      TITLE          STAGE    STATUS     CHAIN   NEXT          AGE
+csv-export-20260826     CSV export     04-test  in-review  ●●●●○○  05-deploy.md   2d
+payment-audit-20260827  Payment audit  01-plan  draft      ●○○○○○  02-spec.md    34d  stale
+```
+
+It reads intents that exist only on unmerged branches, so the whole queue is
+visible from `main` — which is the point of the one-branch-per-intent
+convention. Filter with `--stage 03`, `--status in-review`, or `--all` to include
+finished work.
+
+## Measuring the loop
+
+```bash
+ai-dlc metrics
+```
+
+Eight indicators come from the `intents/` tree and git history alone. The one to
+read first is `plan-diff-alignment`: it compares `## Files that change` in
+`03-plan.md` against the real diff on `intent/<id>`, which is the best local
+signal for scope creep. `ai-dlc adoption` shows which play to add next.
 
 ## Governance
 
 - `.claude/hooks/` blocks production deploys without `RELEASE_APPROVAL`.
-- `.claude/settings.json` denies `WebFetch`, `curl`, and reading `.env*`.
+- `.claude/settings.json` denies `curl`, `wget`, and reading `.env*` and
+  `secrets/**`, and enables the sandbox with a network allowlist.
+- `no-self-approve.sh` stops the agent approving or merging its own work.
 - Branch protection on `main` requires one human approval.
 
 ## Example intent folders

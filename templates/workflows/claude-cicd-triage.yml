@@ -1,0 +1,32 @@
+# When CI fails, an agent reads the logs and posts a three-line triage: flaky or
+# real, likely cause, and fix / retry / escalate. Read-only.
+name: claude ci triage
+
+on:
+  workflow_run:
+    workflows: ["test"]
+    types: [completed]
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: write
+
+jobs:
+  triage:
+    if: github.event.workflow_run.conclusion == 'failure'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Use the 05-cicd-triage skill.
+
+            Run ${{ github.event.workflow_run.id }} failed. Read its logs, decide
+            whether the failure is flaky or real, name the likely root cause, and
+            recommend fix, retry, or escalate. Post the summary as a PR comment.
+          claude_args: |
+            --allowed-tools "Read,Grep,Glob,Bash(gh run view *),Bash(gh run download *),Bash(gh pr comment *)"

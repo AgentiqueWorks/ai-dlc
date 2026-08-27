@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "slack": {
-      "type": "remote",
+      "type": "http",
       "url": "https://mcp.slack.com/mcp",
       "headers": {
         "Authorization": "Bearer ${SLACK_TOKEN}"

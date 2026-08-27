@@ -1,35 +1,51 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "ai-dlc"
-version = "0.2.0"
-description = "Cross-platform Agent Skills and MCP templates for the AI-Native SDLC"
+version = "0.3.0"
+description = "AI-Native SDLC: agent skills, artifact templates, governance, and delivery measurement"
 readme = "README.md"
-license = { text = "Apache-2.0" }
 requires-python = ">=3.10"
-authors = [
-  { name = "AI-DLC contributors" }
-]
-keywords = ["ai", "sdlc", "agent-skills", "mcp", "claude", "codex", "copilot"]
+license = { text = "Apache-2.0" }
+authors = [{ name = "AgentiqueWorks" }]
+keywords = ["agent-skills", "claude", "sdlc", "ai-native", "mcp"]
 classifiers = [
-  "Development Status :: 3 - Alpha",
+  "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",
   "License :: OSI Approved :: Apache Software License",
-  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Software Development :: Quality Assurance",
 ]
 
-dependencies = [
-  "pyyaml>=6.0"
-]
+# No runtime dependencies, on purpose: `python3 scripts/validate.py` has to work
+# in a fresh clone of somebody else's repository with nothing installed.
+dependencies = []
 
 [project.optional-dependencies]
-dev = ["pytest>=7.0"]
+dev = [
+  "pytest>=7.0",
+  # Used only by tests/test_yamlite.py, as a differential check that the
+  # dependency-free parser agrees with a real YAML implementation.
+  "pyyaml>=6.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/AgentiqueWorks/ai-dlc"
+Changelog = "https://github.com/AgentiqueWorks/ai-dlc/blob/main/CHANGELOG.md"
 
 [project.scripts]
 ai-dlc = "ai_dlc.cli:main"
 
-[project.urls]
-Homepage = "https://github.com/AgentiqueWorks/ai-dlc"
-Repository = "https://github.com/AgentiqueWorks/ai-dlc"
+[tool.setuptools]
+packages = ["ai_dlc"]
+
+[tool.setuptools.package-data]
+ai_dlc = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

@@ -1,9 +1,12 @@
 {
   "mcpServers": {
     "stripe": {
-      "type": "command",
+      "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@vineethnkrishnan/stripe-mcp"],
+      "args": [
+        "-y",
+        "@vineethnkrishnan/stripe-mcp"
+      ],
       "env": {
         "STRIPE_API_KEY": "${STRIPE_API_KEY}"
       }

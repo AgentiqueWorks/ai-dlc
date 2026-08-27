@@ -1,7 +1,7 @@
 {
   "name": "ai-dlc",
-  "description": "AI-Native SDLC skills and MCP templates for Claude Code",
-  "version": "0.2.0",
+  "description": "AI-Native SDLC: 19 agent skills, artifact templates, governance hooks, and delivery measurement",
+  "version": "0.3.0",
   "author": {
     "name": "AI-DLC contributors"
   },
@@ -9,5 +9,12 @@
     "type": "git",
     "url": "https://github.com/AgentiqueWorks/ai-dlc.git"
   },
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "keywords": [
+    "sdlc",
+    "agent-skills",
+    "governance",
+    "mcp",
+    "metrics"
+  ]
 }

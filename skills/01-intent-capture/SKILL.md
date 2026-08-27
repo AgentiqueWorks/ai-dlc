@@ -1,6 +1,27 @@
 ---
 name: 01-intent-capture
 description: Capture an idea, ticket, or alert as a human-readable and machine-actionable intent.md. Use for new ideas, Jira/GitHub/Monday tickets, or incidents.
+allowed-tools:
+  - Read
+  - Glob
+  - Grep
+  - Write
+  - Edit
+  - Bash(git status:*)
+  - Bash(git diff:*)
+  - Bash(git log:*)
+  - Bash(git add:*)
+  - Bash(git commit:*)
+  - Bash(git switch:*)
+  - Bash(gh pr create --draft:*)
+metadata:
+  stage: "01-plan"
+  persona: "originator, pm, product-owner, sre, engineer"
+  requires: ""
+  produces: "intents/<id>/01-intent.md"
+  indicators: "time-to-intent, intent-survival, artifact-chain-completeness"
+  mcp: "slack, intercom, jira, linear, monday, datadog"
+  maturity: "stable"
 ---
 
 # Intent capture
@@ -33,7 +54,7 @@ Turn a vague idea or an incoming signal into a committed `intent.md` using the r
    - Datadog: `query_metrics` (for alerts)
 3. Ask the originator the five questions: what is the problem, who is affected, what does better look like, what constraints apply, and what is out of scope.
 4. For a GitHub-centric team, create a branch `intent/<id>` and the folder `intents/<id>/`.
-5. Draft `intents/<id>/01-intent.md` using `templates/intent.md`.
+5. Draft `intents/<id>/01-intent.md` using `templates/01-intent.md`.
 6. Surface any contradictions or missing constraints.
 7. Propose a source link and a record ID (e.g. `intents/csv-export-20260826/01-intent.md`).
 8. Stage the file; open a draft PR if the team uses GitHub; do not merge without human approval.
@@ -43,3 +64,14 @@ Turn a vague idea or an incoming signal into a committed `intent.md` using the r
 - `intents/<id>/01-intent.md` with a clear problem, proposed outcome, affected users/systems, constraints, and open questions.
 - A link back to the source ticket, thread, or alert.
 - A branch `intent/<id>` and a draft PR for the team to review.
+
+## Measure
+
+| Indicator | Type | Where it comes from |
+|---|---|---|
+| `time-to-intent` | leading | `ai-dlc metrics` (needs an extra field) |
+| `intent-survival` | lagging | `ai-dlc metrics` |
+
+`time-to-intent` only computes when the intent carries `- **Signal at:**`. Fill it in from the source system; do not invent a timestamp.
+
+See `references/metrics-catalog.md` for the full indicator set.

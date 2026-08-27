@@ -1,57 +1,70 @@
 #!/usr/bin/env python3
-"""Small CLI for the ai-dlc package."""
+"""``ai-dlc`` — the command line for the AI-Native SDLC package.
+
+Every subcommand dispatches to an importable module rather than shelling out to
+a script, so the behaviour is unit-testable and inherits the caller's
+environment. ``scripts/*.py`` are thin wrappers over the same modules for people
+who run the repo without installing it.
+"""
+
+from __future__ import annotations
 
 import argparse
-import subprocess
 import sys
-from pathlib import Path
+from typing import List, Optional
 
-ROOT = Path(__file__).resolve().parent.parent
+from . import __version__
 
-
-def run_validate() -> int:
-    return subprocess.call([sys.executable, str(ROOT / "scripts" / "validate.py")])
+__all__ = ["build_parser", "main"]
 
 
-def run_install(client: str) -> int:
-    env = {"INSTALL_CLIENT": client}
-    return subprocess.call(["bash", str(ROOT / "scripts" / "install.sh")], env={**dict(), **env})
-
-
-def run_init_repo(target: Path, client: str) -> int:
-    return subprocess.call([sys.executable, str(ROOT / "scripts" / "init-repo.py"), str(target), "--client", client])
-
-
-def run_mcp_sync() -> int:
-    return subprocess.call([sys.executable, str(ROOT / "scripts" / "mcp-sync.py")])
-
-
-def main() -> int:
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ai-dlc", description="AI-Native SDLC tooling")
-    sub = parser.add_subparsers(dest="command", required=True)
+    parser.add_argument("--version", action="version", version=f"ai-dlc {__version__}")
+    sub = parser.add_subparsers(dest="command", required=True, metavar="<command>")
 
-    sub.add_parser("validate", help="Validate skills and MCP configs")
-    sub.add_parser("mcp-sync", help="Regenerate combined MCP JSON files")
+    sub.add_parser("validate", help="Validate skills, MCP configs, hooks, templates, and docs", add_help=False)
+    sub.add_parser("mcp-sync", help="Regenerate the combined per-client MCP configs", add_help=False)
+    sub.add_parser("install", help="Install skills into an agent client's skill directory", add_help=False)
+    sub.add_parser("init-repo", help="Scaffold an AI-DLC project", add_help=False)
+    sub.add_parser("migrate", help="Move an existing project to the current AI-DLC layout", add_help=False)
+    sub.add_parser("backlog", help="Show the intents/ backlog as a work queue", add_help=False)
+    sub.add_parser("metrics", help="Compute the locally derivable delivery indicators", add_help=False)
+    sub.add_parser("adoption", help="Show the play dependency graph and rollout order", add_help=False)
+    return parser
 
-    p_install = sub.add_parser("install", help="Install skills for a client")
-    p_install.add_argument("client", default="claude", choices=["claude", "codex", "agents", "github"], nargs="?")
 
-    p_init = sub.add_parser("init-repo", help="Scaffold an AI-DLC project")
-    p_init.add_argument("target", help="Target repository path")
-    p_init.add_argument("--client", default="claude", choices=["claude", "codex", "agents"])
+def main(argv: Optional[List[str]] = None) -> int:
+    argv = list(sys.argv[1:] if argv is None else argv)
+    parser = build_parser()
 
-    args = parser.parse_args()
+    if not argv or argv[0] in ("-h", "--help", "--version"):
+        parser.parse_args(argv or ["--help"])
+        return 0
 
-    if args.command == "validate":
-        return run_validate()
-    if args.command == "mcp-sync":
-        return run_mcp_sync()
-    if args.command == "install":
-        return run_install(args.client)
-    if args.command == "init-repo":
-        return run_init_repo(Path(args.target), args.client)
+    command, rest = argv[0], argv[1:]
 
-    return 1
+    if command == "validate":
+        from .validate import main as run
+    elif command == "mcp-sync":
+        from .mcpsync import main as run
+    elif command == "install":
+        from .install import main as run
+    elif command == "init-repo":
+        from .scaffold import main as run
+    elif command == "migrate":
+        from .scaffold import migrate_main as run
+    elif command == "backlog":
+        from .backlog import main as run
+    elif command == "metrics":
+        from .metrics import main as run
+    elif command == "adoption":
+        from .adoption import main as run
+    else:
+        parser.parse_args(argv)  # produces the standard "invalid choice" error
+        return 2
+
+    return run(rest)
 
 
 if __name__ == "__main__":

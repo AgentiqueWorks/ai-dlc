@@ -1,0 +1,38 @@
+# First-pass PR review by an agent, against the organization's REVIEW.md.
+# The agent never approves: it writes findings, and a code owner decides.
+name: claude pr review
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Review the diff
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Use the 05-pr-review skill.
+
+            Review this pull request against REVIEW.md, CLAUDE.md, and the
+            artifact chain in intents/ for this branch. Write findings to
+            intents/<id>/04-review.md and post them as a single PR comment.
+
+            Do not approve the pull request. Do not push commits.
+          claude_args: |
+            --allowed-tools "Read,Grep,Glob,Bash(git diff *),Bash(git log *),Bash(gh pr view *),Bash(gh pr comment *)"
+
+      # Separation of duties: the review is advisory, the gate is branch
+      # protection. Require a human code-owner approval in repository settings.

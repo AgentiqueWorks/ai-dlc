@@ -1,6 +1,26 @@
 ---
 name: 05-pr-review
 description: Run a multi-pass AI review on a pull request against the organization REVIEW.md, intent.md, spec.md, and plan.md. Use at the Deploy stage.
+allowed-tools:
+  - Read
+  - Glob
+  - Grep
+  - Write
+  - Edit
+  - Bash(git diff:*)
+  - Bash(git log:*)
+  - Bash(gh pr view:*)
+  - Bash(gh pr create:*)
+  - Bash(gh pr comment:*)
+  - Agent
+metadata:
+  stage: "05-deploy"
+  persona: "tech-lead, code-owner, engineer, security"
+  requires: "03-plan-mode, 03-claude-md"
+  produces: "intents/<id>/04-review.md"
+  indicators: "pr-review-time, plan-diff-alignment, rework-after-review, policy-cite-findings"
+  mcp: "github, gitlab"
+  maturity: "stable"
 ---
 
 # PR review
@@ -39,3 +59,14 @@ Review a PR with consistent, policy-driven passes before a human code owner appr
 - `intents/<id>/04-review.md` with a structured review.
 - A recommendation on whether the change matches the accepted intent and plan.
 - Updated code if asked to address comments.
+
+## Measure
+
+| Indicator | Type | Where it comes from |
+|---|---|---|
+| `plan-diff-alignment` | lagging | `ai-dlc metrics` |
+| `rework-after-review` | lagging | `ai-dlc metrics` |
+
+`policy-cite-findings` should fall toward zero: a policy the review keeps citing belongs in an org skill so the agent applies it during Build instead.
+
+See `references/metrics-catalog.md` for the full indicator set.

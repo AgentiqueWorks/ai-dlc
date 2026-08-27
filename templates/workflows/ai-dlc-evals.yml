@@ -1,0 +1,53 @@
+# Regression-test the agent configuration. Anything that steers the agent —
+# CLAUDE.md, skills, hooks, MCP setup — must pass the eval suite before it lands.
+name: ai-dlc evals
+
+on:
+  pull_request:
+    paths:
+      - "CLAUDE.md"
+      - "AGENTS.md"
+      - ".claude/skills/**"
+      - ".claude/hooks/**"
+      - ".claude/settings.json"
+      - ".mcp.json"
+      - "evals/**"
+
+permissions:
+  contents: read
+
+jobs:
+  evals:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        eval: ${{ fromJSON(needs.discover.outputs.evals) }}
+    needs: discover
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run the task
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          prompt="$(python -c "import json,sys;print(json.load(open(sys.argv[1]))['prompt'])" "${{ matrix.eval }}")"
+          claude -p "$prompt" --permission-mode acceptEdits
+
+      - name: Assert the outcome
+        run: |
+          check="$(python -c "import json,sys;print(json.load(open(sys.argv[1]))['check'])" "${{ matrix.eval }}")"
+          bash "$check"
+
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      evals: ${{ steps.list.outputs.evals }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: list
+        run: |
+          echo "evals=$(ls evals/*.json | jq -R -s -c 'split("\n")[:-1]')" >> "$GITHUB_OUTPUT"
+
+  # Gate the merge on the pass rate, not on a single eval: a suite that must be
+  # 100% green gets weakened until it is meaningless.

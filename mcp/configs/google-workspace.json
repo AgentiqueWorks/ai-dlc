@@ -1,9 +1,12 @@
 {
   "mcpServers": {
     "google-workspace": {
-      "type": "command",
+      "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@vineethnkrishnan/google-workspace-mcp"],
+      "args": [
+        "-y",
+        "@vineethnkrishnan/google-workspace-mcp"
+      ],
       "env": {
         "GOOGLE_CLIENT_ID": "${GOOGLE_CLIENT_ID}",
         "GOOGLE_CLIENT_SECRET": "${GOOGLE_CLIENT_SECRET}",

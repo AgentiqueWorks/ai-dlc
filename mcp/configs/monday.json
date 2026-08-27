@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "monday": {
-      "type": "remote",
+      "type": "sse",
       "url": "https://mcp.monday.com/sse",
       "headers": {
         "Authorization": "Bearer ${MONDAY_TOKEN}"

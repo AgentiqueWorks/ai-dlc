@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "figma": {
-      "type": "remote",
+      "type": "http",
       "url": "https://mcp.figma.com/mcp",
       "headers": {
         "Authorization": "Bearer ${FIGMA_TOKEN}"

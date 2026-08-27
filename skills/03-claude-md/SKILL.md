@@ -1,6 +1,28 @@
 ---
 name: 03-claude-md
 description: Generate or update a project CLAUDE.md from the repository's build commands, conventions, architecture, and common mistakes. Use when onboarding an agent to a repo.
+allowed-tools:
+  - Read
+  - Glob
+  - Grep
+  - Write
+  - Edit
+  - Bash(git status:*)
+  - Bash(git diff:*)
+  - Bash(git log:*)
+  - Bash(git add:*)
+  - Bash(git commit:*)
+  - Bash(git switch:*)
+  - Bash(make:*)
+  - Bash(npm run:*)
+metadata:
+  stage: "03-build"
+  persona: "engineer, platform, tech-lead"
+  requires: ""
+  produces: "CLAUDE.md, AGENTS.md"
+  indicators: "onboarding-first-pr, ci-first-pass-rate"
+  mcp: "github, gitlab"
+  maturity: "stable"
 ---
 
 # CLAUDE.md maintainer
@@ -37,3 +59,13 @@ Create or refresh a project `CLAUDE.md` so every agent session starts with the r
 
 - A repo-level `CLAUDE.md` committed at the project root.
 - A one-page context file that every agent session loads.
+
+## Measure
+
+| Indicator | Type | Where it comes from |
+|---|---|---|
+| `onboarding-first-pr` | lagging | an external system |
+
+A change to `CLAUDE.md` steers every future session, so run the eval suite before merging it — see `04-continuous-evals`.
+
+See `references/metrics-catalog.md` for the full indicator set.

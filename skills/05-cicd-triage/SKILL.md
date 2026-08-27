@@ -1,6 +1,22 @@
 ---
 name: 05-cicd-triage
 description: Diagnose failed CI builds and flaky tests in the pipeline, producing short actionable summaries. Use inside a CI/CD job or after a failed run.
+allowed-tools:
+  - Read
+  - Glob
+  - Grep
+  - Bash(gh run view:*)
+  - Bash(gh run download:*)
+  - Bash(gh pr comment:*)
+  - Write
+metadata:
+  stage: "05-deploy"
+  persona: "engineer, platform, qa"
+  requires: "05-pr-review, 05-release-gate"
+  produces: ""
+  indicators: "ci-first-pass-rate, change-failure-rate"
+  mcp: "github, gitlab, sentry"
+  maturity: "stable"
 ---
 
 # CI/CD triage
@@ -34,3 +50,13 @@ Run Claude as a non-interactive triage step in the pipeline.
 
 - A concise `triage.md` or PR comment.
 - A recommendation: fix, retry, or escalate.
+
+## Measure
+
+| Indicator | Type | Where it comes from |
+|---|---|---|
+| `ci-first-pass-rate` | leading | an external system |
+
+Track how often triage says flaky and is right. A triage nobody trusts costs more than no triage.
+
+See `references/metrics-catalog.md` for the full indicator set.

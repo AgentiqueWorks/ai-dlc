@@ -1,6 +1,26 @@
 ---
 name: 03-plan-mode
 description: Produce an implementation plan.md from an approved spec.md before any code is changed. Use at the start of the Build stage.
+allowed-tools:
+  - Read
+  - Glob
+  - Grep
+  - Write
+  - Edit
+  - Bash(git status:*)
+  - Bash(git diff:*)
+  - Bash(git log:*)
+  - Bash(git add:*)
+  - Bash(git commit:*)
+  - Bash(git switch:*)
+metadata:
+  stage: "03-build"
+  persona: "engineer, tech-lead, qa"
+  requires: "02-spec-writer"
+  produces: "intents/<id>/03-plan.md"
+  indicators: "plan-diff-alignment, stage-latency, first-pass-implementation"
+  mcp: "github, gitlab"
+  maturity: "stable"
 ---
 
 # Plan mode
@@ -26,7 +46,7 @@ Create a written implementation plan that names files, ordering, risks, and proo
 1. Enter plan mode (or act as if in one): read the codebase, `CLAUDE.md`, and the approved `intents/<id>/02-spec.md`. Do not edit files yet.
 2. Read the relevant code paths with `Read` and `Grep`.
 3. If a GitHub issue or GitLab MR exists, use the `github` or `gitlab` MCP to fetch related context.
-4. Write `intents/<id>/03-plan.md` using `templates/plan.md`:
+4. Write `intents/<id>/03-plan.md` using `templates/03-plan.md`:
    - files that change
    - order of work
    - risks and mitigations
@@ -39,3 +59,13 @@ Create a written implementation plan that names files, ordering, risks, and proo
 
 - `intents/<id>/03-plan.md` that is the audit checkpoint for the eventual PR.
 - A risk register and a quantified proof checklist.
+
+## Measure
+
+| Indicator | Type | Where it comes from |
+|---|---|---|
+| `plan-diff-alignment` | lagging | `ai-dlc metrics` |
+
+`ai-dlc metrics --indicator plan-diff-alignment` parses `## Files that change` and compares it to the real diff. Keep that list accurate or the number is meaningless.
+
+See `references/metrics-catalog.md` for the full indicator set.

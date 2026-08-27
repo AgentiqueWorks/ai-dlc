@@ -1,18 +1,29 @@
 # Team usage flows
 
-This document shows how different roles use the skills in this repo. It covers a startup scenario and an enterprise scenario.
+This document shows how different roles use the skills in this repo. It covers a startup scenario and an enterprise scenario. Artifacts are named
+by their position in the chain: `01-intent.md`, `02-spec.md`, `03-plan.md`,
+`04-review.md`, `05-deploy.md`, `06-lessons.md`, all under `intents/<id>/`.
 
 ## Personas and their first skill
 
 | Persona | First skill they touch | Main MCP servers | Goal |
 |---|---|---|---|
-| Product Manager | `01-intent-capture` | Slack, Intercom, Jira, Notion | Capture a problem and write `intent.md`. |
-| Designer | `02-spec-writer` | Figma, Notion, Confluence | Co-write `spec.md` and attach mocks. |
-| Engineer | `03-plan-mode` | GitHub, GitLab | Turn `spec.md` into `plan.md` and implement. |
-| QA / Test Engineer | `04-continuous-evals` | Playwright, GitHub | Define evals and visual checks. |
-| Tech Lead / Release | `05-pr-review` | GitHub, GitLab | Review the diff against `REVIEW.md`. |
-| SRE | `06-closing-the-loop` | Datadog, PagerDuty, Slack | Respond to control-band breaches. |
-| Security | `06-security-scan` | Sentry, GitHub | Schedule scans and route findings. |
+| Originator / PM | `01-intent-capture` | Slack, Intercom, Jira, Notion | Capture a problem as `01-intent.md`. |
+| Product owner | `02-spec-writer` | Figma, Notion, Confluence | Decide whether an intent advances, and sign off `02-spec.md`. |
+| Designer | `02-spec-writer` | Figma, Notion, Confluence | Co-write the spec and attach mocks. |
+| Engineer | `03-plan-mode` | GitHub, GitLab | Turn `02-spec.md` into `03-plan.md` and implement. |
+| Engineer (scale) | `03-subagents`, `03-parallel-sessions` | GitHub | Scope recurring jobs; run independent intents in worktrees. |
+| Policy owner | `03-org-skills` | Notion, Confluence | Make security, API, brand, and UX rules operational. |
+| QA / Test engineer | `04-continuous-evals` | Playwright, GitHub | Regression-test the agent's configuration. |
+| Tech lead | `05-pr-review` | GitHub, GitLab | Own `REVIEW.md`; read findings and decide. |
+| Release manager | `05-release-gate` | GitHub, Vercel | Authorize production; record it in `05-deploy.md`. |
+| Platform engineer | `03-claude-md`, `05-managed-settings`, `05-cicd-integration` | GitHub, GitLab | Agent memory, non-overridable policy, pipeline wiring. |
+| SRE / Service owner | `06-closing-the-loop` | Datadog, PagerDuty, Slack | Define control bands; respond to breaches. |
+| Security lead | `06-security-scan` | Sentry, GitHub, Jira | Own the security skill; route scan findings. |
+| Tech lead / Platform | `07-metrics` | GitHub, Datadog | Decide which play to adopt next, from evidence. |
+
+Who is accountable for which decision — and which decisions an agent must never
+make — is in `roles.md`. The order to adopt the plays in is in `adoption.md`.
 
 ## Startup example: shipping a new feature
 

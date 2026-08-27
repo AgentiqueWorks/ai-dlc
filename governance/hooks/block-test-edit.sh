@@ -1,18 +1,30 @@
 #!/usr/bin/env bash
-# Blocks edits to test files when the agent is in a fix task so it
-# cannot weaken the check on the code it is fixing.
+# First-pass verification: while fixing a bug, the agent must not be able to
+# weaken the test that proves the bug is gone.
+#
+# Set FIX_TASK=1 for the session that is fixing a failing test.
 
 set -euo pipefail
+source "$(dirname "${BASH_SOURCE[0]}")/_lib.sh"
+read_payload
 
-tool=$(jq -r '.tool_name' < /dev/stdin 2>/dev/null || echo "")
-input=$(jq -r '.tool_input.old_string // .tool_input.path // ""' < /dev/stdin 2>/dev/null || echo "")
+[ "${FIX_TASK:-}" = "1" ] || exit 0
 
-if [ "$tool" = "Edit" ] && [[ "$input" == *"test"* || "$input" == *"spec"* ]]; then
-  if [ "${FIX_TASK:-}" = "1" ]; then
-    echo "Test/spec files cannot be edited while FIX_TASK=1." >&2
-    echo "Fix the code, not the test." >&2
-    exit 2
-  fi
-fi
+case "$(tool_name)" in
+  Edit|Write|NotebookEdit|MultiEdit) ;;
+  *) exit 0 ;;
+esac
+
+while IFS= read -r path; do
+  [ -n "$path" ] || continue
+  case "$path" in
+    *test*|*spec*|*Test*|*_test.*|*.test.*|*.spec.*)
+      deny \
+        "Blocked: $path is a test file and FIX_TASK=1." \
+        "Fix the code so the test passes. If the test itself is wrong, unset" \
+        "FIX_TASK and say so explicitly in the pull request."
+      ;;
+  esac
+done <<< "$(target_paths)"
 
 exit 0

@@ -1,14 +1,14 @@
 {
-  "servers": {
+  "mcpServers": {
     "confluence": {
-      "type": "remote",
+      "type": "sse",
       "url": "https://mcp.atlassian.com/v1/sse",
       "headers": {
         "Authorization": "Bearer ${ATLASSIAN_TOKEN}"
       }
     },
     "datadog": {
-      "type": "command",
+      "type": "stdio",
       "command": "npx",
       "args": [
         "-y",
@@ -21,21 +21,21 @@
       }
     },
     "figma": {
-      "type": "remote",
+      "type": "http",
       "url": "https://mcp.figma.com/mcp",
       "headers": {
         "Authorization": "Bearer ${FIGMA_TOKEN}"
       }
     },
     "github": {
-      "type": "remote",
+      "type": "http",
       "url": "https://api.githubcopilot.com/mcp",
       "headers": {
         "Authorization": "Bearer ${GITHUB_TOKEN}"
       }
     },
     "gitlab": {
-      "type": "command",
+      "type": "stdio",
       "command": "npx",
       "args": [
         "-y",
@@ -47,7 +47,7 @@
       }
     },
     "google-workspace": {
-      "type": "command",
+      "type": "stdio",
       "command": "npx",
       "args": [
         "-y",
@@ -60,7 +60,7 @@
       }
     },
     "intercom": {
-      "type": "command",
+      "type": "stdio",
       "command": "npx",
       "args": [
         "-y",
@@ -71,35 +71,35 @@
       }
     },
     "jira": {
-      "type": "remote",
+      "type": "sse",
       "url": "https://mcp.atlassian.com/v1/sse",
       "headers": {
         "Authorization": "Bearer ${ATLASSIAN_TOKEN}"
       }
     },
     "linear": {
-      "type": "remote",
+      "type": "http",
       "url": "https://mcp.linear.app/mcp",
       "headers": {
         "Authorization": "Bearer ${LINEAR_TOKEN}"
       }
     },
     "monday": {
-      "type": "remote",
+      "type": "sse",
       "url": "https://mcp.monday.com/sse",
       "headers": {
         "Authorization": "Bearer ${MONDAY_TOKEN}"
       }
     },
     "notion": {
-      "type": "remote",
+      "type": "http",
       "url": "https://mcp.notion.so/v1/mcp",
       "headers": {
         "Authorization": "Bearer ${NOTION_TOKEN}"
       }
     },
     "pagerduty": {
-      "type": "command",
+      "type": "stdio",
       "command": "npx",
       "args": [
         "-y",
@@ -110,7 +110,7 @@
       }
     },
     "playwright": {
-      "type": "command",
+      "type": "stdio",
       "command": "npx",
       "args": [
         "-y",
@@ -118,7 +118,7 @@
       ]
     },
     "sentry": {
-      "type": "command",
+      "type": "stdio",
       "command": "npx",
       "args": [
         "-y",
@@ -130,14 +130,14 @@
       }
     },
     "slack": {
-      "type": "remote",
+      "type": "http",
       "url": "https://mcp.slack.com/mcp",
       "headers": {
         "Authorization": "Bearer ${SLACK_TOKEN}"
       }
     },
     "stripe": {
-      "type": "command",
+      "type": "stdio",
       "command": "npx",
       "args": [
         "-y",
@@ -148,7 +148,7 @@
       }
     },
     "vercel": {
-      "type": "command",
+      "type": "stdio",
       "command": "npx",
       "args": [
         "-y",
