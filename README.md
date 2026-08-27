@@ -8,6 +8,19 @@ This repository is a cross-platform set of [Agent Skills](https://agentskills.io
 
 It ships as a package: **skills**, **artifact templates**, **MCP client configs**, **governance hooks**, **eval examples**, and a small `ai-dlc` CLI that can scaffold and validate an AI-DLC project.
 
+## Table of contents
+
+1. [The idea in one loop](#the-idea-in-one-loop)
+2. [What is in this package](#what-is-in-this-package)
+3. [Quick start](#quick-start)
+4. [How a team should manage the AI-DLC](#how-a-team-should-manage-the-ai-dlc)
+5. [Personas: who touches which skill](#personas-who-touches-which-skill)
+6. [Two real flows](#two-real-flows)
+7. [Governance hooks](#governance-hooks)
+8. [The `ai-dlc` CLI](#the-ai-dlc-cli)
+9. [Repository layout](#repository-layout)
+10. [Contributing](#contributing)
+
 ## The idea in one loop
 
 In the traditional SDLC, every stage is a human gate. When AI agents can write code in hours, that linear, document-and-handoff model becomes the bottleneck.
